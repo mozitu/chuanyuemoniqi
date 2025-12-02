@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>穿越系统模拟器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Main Section -->
+        <div class="section active" id="mainSection">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-icon" id="avatarIcon" title="点击更换头像">
+                    <svg id="defaultAvatar" viewBox="0 0 80 80" fill="none">
+                        <circle cx="40" cy="40" r="36" stroke="#c9a959" stroke-width="2"/>
+                        <circle cx="40" cy="40" r="28" stroke="#8b7355" stroke-width="1"/>
+                        <path d="M40 12 L44 24 L40 20 L36 24 Z" fill="#8b2635"/>
+                        <path d="M40 68 L44 56 L40 60 L36 56 Z" fill="#2d5a4a"/>
+                        <path d="M12 40 L24 36 L20 40 L24 44 Z" fill="#2d5a4a"/>
+                        <path d="M68 40 L56 36 L60 40 L56 44 Z" fill="#8b2635"/>
+                        <circle cx="40" cy="40" r="6" fill="#c9a959"/>
+                        <circle cx="40" cy="40" r="3" fill="#1a1612"/>
+                    </svg>
+                    <img id="customAvatar" style="display:none;" alt="头像">
+                    <div class="avatar-hint">更换</div>
+                </div>
+                <h1>穿越系统</h1>
+                <p>择一世界 · 定一命运</p>
+            </div>
+
+            <!-- Menu Grid -->
+            <div class="menu-grid">
+                <div class="menu-card" data-menu="chuanyue">
+                    <div class="menu-icon">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="18" stroke="#c9a959" stroke-width="2"/>
+                            <path d="M24 6 L28 18 L24 14 L20 18 Z" fill="#8b2635"/>
+                            <path d="M24 42 L28 30 L24 34 L20 30 Z" fill="#2d5a4a"/>
+                            <circle cx="24" cy="24" r="5" fill="#c9a959"/>
+                            <path d="M12 24 H18 M30 24 H36" stroke="#8b7355" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="menu-title">穿越</div>
+                    <div class="menu-desc">经典穿越模式</div>
+                </div>
+                <div class="menu-card" data-menu="kuaichuan">
+                    <div class="menu-icon">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <path d="M8 24 L24 8 L40 24 L24 40 Z" stroke="#8b2635" stroke-width="2" fill="none"/>
+                            <path d="M16 24 L24 16 L32 24 L24 32 Z" stroke="#2d5a4a" stroke-width="2" fill="none"/>
+                            <circle cx="24" cy="24" r="4" fill="#c9a959"/>
+                            <path d="M24 4 V10 M24 38 V44 M4 24 H10 M38 24 H44" stroke="#8b7355" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="menu-title">快穿</div>
+                    <div class="menu-desc">多世界穿梭</div>
+                </div>
+                <div class="menu-card" data-menu="chuanshu">
+                    <div class="menu-icon">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <path d="M10 8 L10 40 Q10 42 12 42 L36 42 Q38 42 38 40 L38 8 Q38 6 36 6 L12 6 Q10 6 10 8 Z" stroke="#2d5a4a" stroke-width="2" fill="none"/>
+                            <line x1="16" y1="14" x2="32" y2="14" stroke="#8b7355" stroke-width="1.5"/>
+                            <line x1="16" y1="20" x2="32" y2="20" stroke="#8b7355" stroke-width="1.5"/>
+                            <line x1="16" y1="26" x2="28" y2="26" stroke="#8b7355" stroke-width="1.5"/>
+                            <circle cx="32" cy="34" r="6" fill="#8b2635"/>
+                            <path d="M30 34 L32 36 L35 32" stroke="#e8dcc8" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="menu-title">穿书</div>
+                    <div class="menu-desc">进入书中世界</div>
+                </div>
+                <div class="menu-card" data-menu="wuxianliu">
+                    <div class="menu-icon">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="16" stroke="#8b2635" stroke-width="2" stroke-dasharray="4 2"/>
+                            <path d="M24 8 V14 M24 34 V40 M8 24 H14 M34 24 H40" stroke="#c9a959" stroke-width="2"/>
+                            <path d="M16 16 L20 20 M28 28 L32 32 M16 32 L20 28 M28 20 L32 16" stroke="#2d5a4a" stroke-width="1.5"/>
+                            <circle cx="24" cy="24" r="6" fill="none" stroke="#c9a959" stroke-width="2"/>
+                            <text x="24" y="27" text-anchor="middle" fill="#c9a959" font-size="8" font-weight="bold">∞</text>
+                        </svg>
+                    </div>
+                    <div class="menu-title">无限流</div>
+                    <div class="menu-desc">副本生存挑战</div>
+                </div>
+                <div class="menu-card" data-menu="settings">
+                    <div class="menu-icon">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="8" stroke="#c9a959" stroke-width="2"/>
+                            <path d="M24 4 L26 10 L22 10 Z M24 44 L26 38 L22 38 Z" fill="#8b7355"/>
+                            <path d="M4 24 L10 26 L10 22 Z M44 24 L38 26 L38 22 Z" fill="#8b7355"/>
+                            <path d="M9.86 9.86 L14 16 L12 14 Z M38.14 38.14 L34 32 L36 34 Z" fill="#8b7355"/>
+                            <path d="M38.14 9.86 L32 14 L34 12 Z M9.86 38.14 L16 34 L14 36 Z" fill="#8b7355"/>
+                            <circle cx="24" cy="24" r="3" fill="#2d5a4a"/>
+                        </svg>
+                    </div>
+                    <div class="menu-title">设置</div>
+                    <div class="menu-desc">系统配置</div>
+                </div>
+            </div>
+
+            <!-- Preset Section -->
+            <div class="expand-card" id="presetCard">
+                <div class="expand-header" data-target="presetContent">
+                    <div class="expand-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 4 H20 V20 H4 Z" stroke="#c9a959" stroke-width="2" fill="none"/>
+                            <path d="M8 8 H16 M8 12 H14 M8 16 H12" stroke="#8b7355" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="expand-info">
+                        <div class="expand-title">预设</div>
+                        <div class="expand-desc">设定AI角色与行为规范</div>
+                    </div>
+                    <svg class="expand-arrow" viewBox="0 0 20 20" fill="none">
+                        <path d="M5 8 L10 13 L15 8" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="expand-content" id="presetContent">
+                    <div class="preset-list" id="presetList">
+                        <!-- Presets will be added here -->
+                    </div>
+                    <button class="add-btn" id="addPresetBtn">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5 V19 M5 12 H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>添加预设</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- World Book Section -->
+            <div class="expand-card" id="worldBookCard">
+                <div class="expand-header" data-target="worldBookContent">
+                    <div class="expand-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 19 V5 Q4 3 6 3 H18 Q20 3 20 5 V19 Q20 21 18 21 H6 Q4 21 4 19 Z" stroke="#2d5a4a" stroke-width="2" fill="none"/>
+                            <path d="M4 17 H20" stroke="#2d5a4a" stroke-width="2"/>
+                            <circle cx="12" cy="10" r="3" stroke="#c9a959" stroke-width="1.5"/>
+                            <path d="M8 10 Q12 6 16 10" stroke="#8b7355" stroke-width="1"/>
+                        </svg>
+                    </div>
+                    <div class="expand-info">
+                        <div class="expand-title">世界书</div>
+                        <div class="expand-desc">拓展世界观与知识设定</div>
+                    </div>
+                    <svg class="expand-arrow" viewBox="0 0 20 20" fill="none">
+                        <path d="M5 8 L10 13 L15 8" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="expand-content" id="worldBookContent">
+                    <div class="worldbook-list" id="worldBookList">
+                        <!-- World book entries will be added here -->
+                    </div>
+                    <button class="add-btn" id="addWorldBookBtn">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5 V19 M5 12 H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>添加词条</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Collection & Archive Card -->
+            <div class="menu-card collection-menu-card" id="collectionMenuCard">
+                <div class="menu-icon">
+                    <svg viewBox="0 0 48 48" fill="none">
+                        <path d="M24 6 L30 18 L44 20 L34 30 L36 44 L24 38 L12 44 L14 30 L4 20 L18 18 Z" stroke="#c9a959" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <div class="menu-title">收藏与存档</div>
+                <div class="menu-desc">查看收藏内容</div>
+            </div>
+
+            <!-- Preset Edit Modal -->
+            <div class="modal-overlay" id="presetModal">
+                <div class="modal-box preset-modal">
+                    <div class="modal-header">
+                        <h3 id="presetModalTitle">添加预设</h3>
+                        <button class="modal-close" id="presetModalClose">
+                            <svg viewBox="0 0 28 28" fill="none">
+                                <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-item">
+                            <label class="form-label">预设名称</label>
+                            <input type="text" class="form-input" id="presetName" placeholder="如：穿越者系统助手">
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">作用范围</label>
+                            <select class="form-select" id="presetScope">
+                                <option value="global">全局（所有模式）</option>
+                                <option value="chuanyue">仅穿越模式</option>
+                                <option value="kuaichuan">仅快穿模式</option>
+                                <option value="chuanshu">仅穿书模式</option>
+                                <option value="wuxianliu">仅无限流模式</option>
+                            </select>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">预设内容</label>
+                            <textarea class="form-textarea" id="presetContentInput" rows="8" placeholder="输入系统预设提示词，定义AI的角色、行为规范、回复风格等..."></textarea>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">
+                                <input type="checkbox" id="presetEnabled" checked>
+                                <span>启用此预设</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-btn modal-btn-cancel" id="presetModalCancel">取消</button>
+                        <button class="modal-btn modal-btn-confirm" id="presetModalSave">保存</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- World Book Edit Modal -->
+            <div class="modal-overlay" id="worldBookModal">
+                <div class="modal-box worldbook-modal">
+                    <div class="modal-header">
+                        <h3 id="worldBookModalTitle">添加词条</h3>
+                        <button class="modal-close" id="worldBookModalClose">
+                            <svg viewBox="0 0 28 28" fill="none">
+                                <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <div class="form-item form-item-half">
+                                <label class="form-label">分类</label>
+                                <input type="text" class="form-input" id="worldBookCategory" list="categoryList" placeholder="选择或输入">
+                                <datalist id="categoryList"></datalist>
+                            </div>
+                            <div class="form-item form-item-half">
+                                <label class="form-label">优先级</label>
+                                <input type="number" class="form-input" id="worldBookPriority" value="50" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">作用范围</label>
+                            <select class="form-select" id="worldBookScope">
+                                <option value="global">全局（所有模式）</option>
+                                <option value="chuanyue">仅穿越模式</option>
+                                <option value="kuaichuan">仅快穿模式</option>
+                                <option value="chuanshu">仅穿书模式</option>
+                                <option value="wuxianliu">仅无限流模式</option>
+                            </select>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">关键词 <span class="form-hint">（用逗号分隔多个关键词）</span></label>
+                            <input type="text" class="form-input" id="worldBookKeywords" placeholder="如：仙侠,修仙,灵气">
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">词条内容</label>
+                            <textarea class="form-textarea" id="worldBookEntryInput" rows="6" placeholder="当对话中出现关键词时，此内容将被注入到AI上下文中..."></textarea>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">
+                                <input type="checkbox" id="worldBookEnabled" checked>
+                                <span>启用此词条</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-btn modal-btn-cancel" id="worldBookModalCancel">取消</button>
+                        <button class="modal-btn modal-btn-confirm" id="worldBookModalSave">保存</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avatar Modal -->
+            <div class="modal-overlay" id="avatarModal">
+                <div class="modal-box">
+                    <div class="modal-header">
+                        <h3>更换头像</h3>
+                        <button class="modal-close" id="modalClose">
+                            <svg viewBox="0 0 28 28" fill="none">
+                                <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-preview" id="modalPreview">
+                        <svg viewBox="0 0 80 80" fill="none">
+                            <circle cx="40" cy="40" r="36" stroke="#c9a959" stroke-width="2"/>
+                            <circle cx="40" cy="40" r="28" stroke="#8b7355" stroke-width="1"/>
+                            <path d="M40 12 L44 24 L40 20 L36 24 Z" fill="#8b2635"/>
+                            <path d="M40 68 L44 56 L40 60 L36 56 Z" fill="#2d5a4a"/>
+                            <path d="M12 40 L24 36 L20 40 L24 44 Z" fill="#2d5a4a"/>
+                            <path d="M68 40 L56 36 L60 40 L56 44 Z" fill="#8b2635"/>
+                            <circle cx="40" cy="40" r="6" fill="#c9a959"/>
+                            <circle cx="40" cy="40" r="3" fill="#1a1612"/>
+                        </svg>
+                    </div>
+                    <div class="modal-tabs">
+                        <button class="modal-tab active" data-tab="local">本地上传</button>
+                        <button class="modal-tab" data-tab="url">网络图片</button>
+                    </div>
+                    <div class="modal-content active" id="localTab">
+                        <div class="file-input-wrapper">
+                            <div class="file-input-btn">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 4 L12 16 M7 9 L12 4 L17 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M4 17 L4 19 Q4 20 5 20 L19 20 Q20 20 20 19 L20 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                <span>选择图片文件</span>
+                            </div>
+                            <input type="file" id="fileInput" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="modal-content" id="urlTab">
+                        <input type="text" class="url-input" id="urlInput" placeholder="输入图片URL地址...">
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-btn modal-btn-cancel" id="modalCancel">取消</button>
+                        <button class="modal-btn modal-btn-confirm" id="modalConfirm">确定</button>
+                    </div>
+                    <button class="modal-btn modal-btn-reset" id="modalReset">恢复默认头像</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Chuanyue (Transmigration) Section -->
+        <div class="section" id="chuanyueSection">
+            <!-- Sidebar Overlay -->
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+            <!-- Sidebar -->
+            <div class="chuanyue-sidebar collapsed" id="chuanyueSidebar">
+                <div class="sidebar-header">
+                    <button class="sidebar-back" id="chuanyueBack">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M15 18 L9 12 L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h2 id="gameModeTitle">穿越模式</h2>
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 6 H20 M4 12 H20 M4 18 H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="sidebar-content">
+                    <!-- Character Profile Card -->
+                    <div class="profile-card" id="profileCard">
+                        <div class="profile-header">
+                            <div class="profile-icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="8" r="4" stroke="#c9a959" stroke-width="2"/>
+                                    <path d="M4 20 Q4 14 12 14 Q20 14 20 20" stroke="#c9a959" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="profile-title">我的人设</div>
+                            <button class="profile-edit-btn" id="editProfileBtn" title="编辑人设">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M16 3 L21 8 L8 21 H3 V16 Z" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="profile-body" id="profileBody">
+                            <div class="profile-empty">
+                                <p>尚未设置人设</p>
+                                <button class="profile-create-btn" id="createProfileBtn">创建人设</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Shop Card (快穿模式专用) -->
+                    <div class="sidebar-card shop-card" id="shopCard" style="display: none;">
+                        <div class="sidebar-card-header clickable" id="shopHeader">
+                            <div class="sidebar-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M3 3 H5 L5.4 5 M7 13 H17 L21 5 H5.4 M7 13 L5.4 5 M7 13 L4.7 17.6 C4.2 18.5 4.9 19.5 5.9 19.5 H17 M17 19.5 C15.9 19.5 15 20.4 15 21.5 C15 22.6 15.9 23.5 17 23.5 C18.1 23.5 19 22.6 19 21.5 C19 20.4 18.1 19.5 17 19.5 M9 21.5 C9 22.6 8.1 23.5 7 23.5 C5.9 23.5 5 22.6 5 21.5 C5 20.4 5.9 19.5 7 19.5 C8.1 19.5 9 20.4 9 21.5" stroke="#c9a959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="sidebar-card-title">系统商城</div>
+                            <div class="shop-points" id="shopPoints">
+                                <span class="points-icon">💎</span>
+                                <span class="points-value" id="currentPoints">0</span>
+                            </div>
+                        </div>
+                        <div class="sidebar-card-body" id="shopBody">
+                            <div class="shop-hint">点击查看商城商品</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Transmigrated Character Card -->
+                    <div class="sidebar-card" id="transCharCard" style="display: none;">
+                        <div class="sidebar-card-header" id="transCharHeader">
+                            <div class="sidebar-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z" stroke="#c9a959" stroke-width="2" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="sidebar-card-title">穿越人设</div>
+                            <button class="sidebar-card-edit" id="editTransCharBtn" title="编辑">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M16 3 L21 8 L8 21 H3 V16 Z" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="sidebar-card-body" id="transCharBody">
+                            <!-- Will be filled by JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- World Info Card (Collapsible) -->
+                    <div class="sidebar-card collapsible" id="worldInfoCard" style="display: none;">
+                        <div class="sidebar-card-header clickable" id="worldInfoHeader">
+                            <div class="sidebar-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="#c9a959" stroke-width="2"/>
+                                    <path d="M2 12 H22 M12 2 C15 6 15 18 12 22 M12 2 C9 6 9 18 12 22" stroke="#c9a959" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="sidebar-card-title">世界背景</div>
+                            <div class="sidebar-card-toggle">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M6 9 L12 15 L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="sidebar-card-body collapsed" id="worldInfoBody">
+                            <!-- Will be filled by JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- World Building Card (Collapsible) -->
+                    <div class="sidebar-card collapsible" id="worldBuildingCard" style="display: none;">
+                        <div class="sidebar-card-header clickable" id="worldBuildingHeader">
+                            <div class="sidebar-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M3 21 L21 21 M5 21 V7 L12 3 L19 7 V21 M9 21 V15 H15 V21" stroke="#c9a959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="sidebar-card-title">世界设定</div>
+                            <button class="sidebar-card-refresh" id="refreshWorldBuilding" title="生成世界设定">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M1 4 v6 h6 M23 20 v-6 h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M20.49 9 A9 9 0 0 0 5.64 5.64 L1 10 M23 14 l-4.64 4.36 A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <div class="sidebar-card-toggle">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M6 9 L12 15 L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="sidebar-card-body collapsed" id="worldBuildingBody">
+                            <div class="world-building-empty">
+                                <p>点击刷新按钮生成世界设定</p>
+                                <small>注意：只能生成一次</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Restart Button -->
+                    <button class="sidebar-restart-btn" id="restartBtn">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M1 4 v6 h6 M23 20 v-6 h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M20.49 9 A9 9 0 0 0 5.64 5.64 L1 10 M23 14 l-4.64 4.36 A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>重新开始</span>
+                    </button>
+                    
+                </div>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="chuanyue-main" id="chuanyueMain">
+                <!-- Floating menu button when sidebar is collapsed -->
+                <button class="floating-menu-btn" id="floatingMenuBtn" title="展开侧边栏">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M4 6 H20 M4 12 H20 M4 18 H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                
+                <!-- Placeholder (before start) -->
+                <div class="chuanyue-placeholder" id="chuanyuePlaceholder">
+                    <div class="placeholder-icon">
+                        <svg viewBox="0 0 80 80" fill="none">
+                            <circle cx="40" cy="40" r="35" stroke="#3d352a" stroke-width="2"/>
+                            <circle cx="40" cy="40" r="25" stroke="#c9a959" stroke-width="2" stroke-dasharray="8 4"/>
+                            <path d="M40 15 L44 30 L40 25 L36 30 Z" fill="#8b2635"/>
+                            <path d="M40 65 L44 50 L40 55 L36 50 Z" fill="#2d5a4a"/>
+                            <circle cx="40" cy="40" r="8" fill="#c9a959"/>
+                        </svg>
+                    </div>
+                    <p>请先设置你的人设，然后开始穿越之旅</p>
+                    <button class="start-chuanyue-btn" id="startChuanyueBtn">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M10 8 L16 12 L10 16 Z" fill="currentColor"/>
+                        </svg>
+                        <span>开始穿越</span>
+                    </button>
+                </div>
+                
+                <!-- Chat Interface (after start) -->
+                <div class="chat-interface" id="chatInterface" style="display: none;">
+                    <!-- Status Bar -->
+                    <div class="chat-status-bar" id="chatStatusBar">
+                        <div class="status-item">
+                            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2 V6 M8 2 V6 M3 10 H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                            <span id="statusDate">--</span>
+                        </div>
+                        <div class="status-item">
+                            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6 V12 L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                            <span id="statusTime">--:--</span>
+                        </div>
+                        <div class="status-item">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 C8 6 4 10 4 14 a8 8 0 1 0 16 0 c0-4-4-8-8-12z" stroke="currentColor" stroke-width="2"/></svg>
+                            <span id="statusLocation">--</span>
+                        </div>
+                        <div class="status-item">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 v2 M12 20 v2 M4 12 H2 M22 12 h-2 M6.34 6.34 L4.93 4.93 M19.07 4.93 l-1.41 1.41 M6.34 17.66 l-1.41 1.41 M19.07 19.07 l-1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/></svg>
+                            <span id="statusWeather">--</span>
+                        </div>
+                        <button class="status-save-btn" id="saveArchiveBtn" title="保存存档">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M19 21 H5 Q3 21 3 19 V5 Q3 3 5 3 H16 L21 8 V19 Q21 21 19 21 Z" stroke="currentColor" stroke-width="2"/><path d="M7 3 V8 H15" stroke="currentColor" stroke-width="2"/><rect x="7" y="13" width="10" height="8" stroke="currentColor" stroke-width="2"/></svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Messages Area -->
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be inserted here -->
+                    </div>
+                    
+                    <!-- Input Area -->
+                    <div class="chat-input-area">
+                        <textarea class="chat-input" id="chatInput" placeholder="描述你的行动或对话..." rows="1"></textarea>
+                        <button class="chat-more-btn" id="chatMoreBtn" title="更多选项">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="5" r="2" fill="currentColor"/>
+                                <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                                <circle cx="12" cy="19" r="2" fill="currentColor"/>
+                            </svg>
+                        </button>
+                        <button class="chat-send-btn" id="chatSendBtn" title="发送消息">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M22 2 L11 13 M22 2 L15 22 L11 13 L2 9 Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button class="chat-generate-btn" id="chatGenerateBtn" title="生成AI回复">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2 L12 6 M12 18 L12 22 M2 12 L6 12 M18 12 L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Message Context Menu -->
+                    <div class="message-context-menu" id="messageContextMenu">
+                        <button class="context-menu-item" id="contextFavorite">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            </svg>
+                            <span>收藏</span>
+                        </button>
+                        <button class="context-menu-item" id="contextEdit" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M16 3 L21 8 L8 21 H3 V16 Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>编辑</span>
+                        </button>
+                        <button class="context-menu-item" id="contextRegenerate">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M1 4 v6 h6 M23 20 v-6 h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M20.49 9 A9 9 0 0 0 5.64 5.64 L1 10 M23 14 l-4.64 4.36 A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>重新生成</span>
+                        </button>
+                        <button class="context-menu-item context-menu-danger" id="contextDelete">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6 H21 M8 6 V4 a2 2 0 0 1 2-2 h4 a2 2 0 0 1 2 2 v2 M19 6 v14 a2 2 0 0 1-2 2 H7 a2 2 0 0 1-2-2 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>删除</span>
+                        </button>
+                    </div>
+
+                    <!-- Bottom Sheet -->
+                    <div class="bottom-sheet-overlay" id="bottomSheetOverlay"></div>
+                    <div class="bottom-sheet" id="bottomSheet">
+                        <div class="bottom-sheet-handle"></div>
+                        <div class="bottom-sheet-grid">
+                            <button class="bottom-sheet-app" id="btnSummary">
+                                <div class="app-icon app-icon-gold">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M9 5 H7 a2 2 0 0 0-2 2 v12 a2 2 0 0 0 2 2 h10 a2 2 0 0 0 2-2 V7 a2 2 0 0 0-2-2 h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        <path d="M9 5 a2 2 0 0 1 2-2 h2 a2 2 0 0 1 2 2 a2 2 0 0 1-2 2 h-2 a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M9 12 H15 M9 16 H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                <span>总结</span>
+                            </button>
+                            <button class="bottom-sheet-app" id="btnStatus">
+                                <div class="app-icon app-icon-green">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="8" r="5" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M3 21 C3 16.5 7 13 12 13 C17 13 21 16.5 21 21" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M16 6 L18 8 L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <span>状态栏</span>
+                            </button>
+                            <button class="bottom-sheet-app" id="btnMap">
+                                <div class="app-icon app-icon-blue">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M1 6 v16 l7-4 8 4 7-4 V2 l-7 4 -8-4 -7 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                        <path d="M8 2 v16 M16 6 v16" stroke="currentColor" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <span>地图</span>
+                            </button>
+                            <button class="bottom-sheet-app" id="btnCharacters">
+                                <div class="app-icon app-icon-pink">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M3 21 v-2 a4 4 0 0 1 4-4 h4 a4 4 0 0 1 4 4 v2" stroke="currentColor" stroke-width="2"/>
+                                        <circle cx="17" cy="7" r="3" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M21 21 v-2 a3 3 0 0 0-3-3 h-1" stroke="currentColor" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <span>人物</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transmigrated Character Modal -->
+    <div class="modal-overlay" id="transCharModal">
+        <div class="modal-box trans-char-modal">
+            <div class="modal-header">
+                <h3>穿越人设</h3>
+                <button class="modal-close" id="transCharModalClose">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6 L6 18 M6 6 L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>穿越后的身份名称</label>
+                    <input type="text" id="transCharName" placeholder="如：李府嫡女、将军府庶子">
+                </div>
+                <div class="form-group">
+                    <label>身份背景</label>
+                    <textarea id="transCharBackground" rows="3" placeholder="穿越后角色的家世背景、社会地位等"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>当前处境</label>
+                    <textarea id="transCharSituation" rows="3" placeholder="角色目前面临的困境或状况"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>特殊能力/金手指</label>
+                    <textarea id="transCharAbility" rows="2" placeholder="穿越后获得的特殊能力（可选）"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>其他备注</label>
+                    <textarea id="transCharNotes" rows="2" placeholder="其他需要补充的设定"></textarea>
+                </div>
+                <button class="ai-polish-btn" id="aiPolishTransChar">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2 L12 6 M12 18 L12 22 M4.93 4.93 L7.76 7.76 M16.24 16.24 L19.07 19.07 M2 12 L6 12 M18 12 L22 12 M4.93 19.07 L7.76 16.24 M16.24 7.76 L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>AI 完善</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" id="transCharModalCancel">取消</button>
+                <button class="modal-btn modal-btn-confirm" id="transCharModalConfirm">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Modal -->
+    <div class="modal-overlay" id="summaryModal">
+        <div class="modal-box summary-modal">
+            <div class="modal-header">
+                <h3>📋 故事总结</h3>
+                <button class="modal-close" id="summaryModalClose">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6 L6 18 M6 6 L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="summary-content">
+                <textarea class="summary-textarea" id="summaryTextarea" placeholder="暂无总结内容..."></textarea>
+            </div>
+            <div class="summary-actions">
+                <button class="summary-btn summary-btn-generate" id="summaryGenerateBtn">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2 L12 6 M12 18 L12 22 M4.93 4.93 L7.76 7.76 M16.24 16.24 L19.07 19.07 M2 12 L6 12 M18 12 L22 12 M4.93 19.07 L7.76 16.24 M16.24 7.76 L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>AI总结</span>
+                </button>
+                <button class="summary-btn summary-btn-save" id="summarySaveBtn">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M19 21 H5 a2 2 0 0 1-2-2 V5 a2 2 0 0 1 2-2 h11 l5 5 v11 a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M17 21 V13 H7 v8 M7 3 v5 h8" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>保存</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Characters Modal -->
+    <div class="modal-overlay" id="charactersModal">
+        <div class="modal-box characters-modal">
+            <div class="modal-header">
+                <h3>👥 重要人物</h3>
+                <div class="modal-header-actions">
+                    <button class="modal-refresh-btn" id="charactersRefreshBtn" title="AI刷新人物">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M21 12a9 9 0 11-2.63-6.36M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="modal-close" id="charactersModalClose">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6 L6 18 M6 6 L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="characters-content" id="charactersContent">
+                <div class="status-empty">尚未生成重要人物</div>
+            </div>
+            <div class="character-detail" id="characterDetail" style="display:none;">
+                <div class="map-detail-header">
+                    <button class="map-back-btn" id="characterBackBtn">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M19 12 H5 M12 19 l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h4 id="characterDetailTitle">人物名称</h4>
+                </div>
+                <div class="character-detail-body" id="characterDetailBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Modal -->
+    <div class="modal-overlay" id="mapModal">
+        <div class="modal-box map-modal">
+            <div class="modal-header">
+                <h3>🗺️ 世界地图</h3>
+                <button class="modal-close" id="mapModalClose">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6 L6 18 M6 6 L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="map-content" id="mapContent">
+                <div class="map-empty">
+                    <p>尚未生成地图</p>
+                    <button class="map-generate-btn" id="mapGenerateBtn">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2 L12 6 M12 18 L12 22 M4.93 4.93 L7.76 7.76 M16.24 16.24 L19.07 19.07 M2 12 L6 12 M18 12 L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        生成世界地图
+                    </button>
+                </div>
+            </div>
+            <div class="map-location-detail" id="mapLocationDetail" style="display:none;">
+                <div class="map-detail-header">
+                    <button class="map-back-btn" id="mapBackBtn">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M19 12 H5 M12 19 l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h4 id="mapDetailTitle">地点名称</h4>
+                </div>
+                <div class="map-detail-body" id="mapDetailBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Modal -->
+    <div class="modal-overlay" id="statusModal">
+        <div class="modal-box status-modal">
+            <div class="modal-header">
+                <h3>📊 状态栏</h3>
+                <div class="modal-header-actions">
+                    <button class="modal-refresh-btn" id="statusRefreshBtn" title="AI刷新状态">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M21 12a9 9 0 11-2.63-6.36M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="modal-close" id="statusModalClose">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6 L6 18 M6 6 L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="status-content" id="statusContent">
+                <!-- Status Section -->
+                <div class="status-section">
+                    <div class="status-section-header">
+                        <span class="status-section-title">🎭 当前状态</span>
+                        <button class="status-edit-btn" data-section="currentStatus">编辑</button>
+                    </div>
+                    <div class="status-section-body" id="statusCurrent">
+                        <div class="status-empty">暂无状态信息</div>
+                    </div>
+                </div>
+                
+                <!-- Relationships Section -->
+                <div class="status-section">
+                    <div class="status-section-header">
+                        <span class="status-section-title">💕 好感度</span>
+                        <button class="status-edit-btn" data-section="affection">编辑</button>
+                    </div>
+                    <div class="status-section-body" id="statusAffection">
+                        <div class="status-empty">暂无可攻略角色</div>
+                    </div>
+                </div>
+                
+                <!-- Friends Section -->
+                <div class="status-section">
+                    <div class="status-section-header">
+                        <span class="status-section-title">🤝 好友</span>
+                        <button class="status-edit-btn" data-section="friends">编辑</button>
+                    </div>
+                    <div class="status-section-body" id="statusFriends">
+                        <div class="status-empty">暂无好友</div>
+                    </div>
+                </div>
+                
+                <!-- Enemies Section -->
+                <div class="status-section">
+                    <div class="status-section-header">
+                        <span class="status-section-title">⚔️ 敌对</span>
+                        <button class="status-edit-btn" data-section="enemies">编辑</button>
+                    </div>
+                    <div class="status-section-body" id="statusEnemies">
+                        <div class="status-empty">暂无敌对关系</div>
+                    </div>
+                </div>
+                
+                <!-- Inventory Section -->
+                <div class="status-section">
+                    <div class="status-section-header">
+                        <span class="status-section-title">🎒 物品</span>
+                        <button class="status-edit-btn" data-section="inventory">编辑</button>
+                    </div>
+                    <div class="status-section-body" id="statusInventory">
+                        <div class="status-empty">暂无物品</div>
+                    </div>
+                </div>
+                
+                <!-- Custom Status Sections (动态生成) -->
+                <div id="customStatusSections"></div>
+            </div>
+            <div class="status-actions">
+                <button class="status-btn status-btn-ai" id="statusAiUpdate">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2 L12 6 M12 18 L12 22 M4.93 4.93 L7.76 7.76 M16.24 16.24 L19.07 19.07 M2 12 L6 12 M18 12 L22 12 M4.93 19.07 L7.76 16.24 M16.24 7.76 L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>AI更新状态</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 直播弹幕浮动按钮 -->
+    <div class="livestream-float-btn" id="livestreamFloatBtn" style="display: none;">
+        <span class="livestream-icon">📺</span>
+        <span class="livestream-badge" id="livestreamBadge">0</span>
+    </div>
+    
+    <!-- 直播弹幕面板 -->
+    <div class="livestream-panel" id="livestreamPanel" style="display: none;">
+        <div class="livestream-header">
+            <span class="livestream-title">📺 直播间</span>
+            <div class="livestream-stats">
+                <span class="viewer-count">👥 <span id="viewerCount">0</span></span>
+                <span class="points-display">💎 <span id="livestreamPoints">0</span></span>
+            </div>
+            <button class="livestream-clear" id="livestreamClear" title="清除弹幕">🗑️</button>
+            <button class="livestream-close" id="livestreamClose">✕</button>
+        </div>
+        <div class="livestream-messages" id="livestreamMessages">
+            <!-- 弹幕消息会在这里显示 -->
+        </div>
+    </div>
+
+    <!-- Chuanyue Rules Modal -->
+    <div class="modal-overlay" id="chuanyueRulesModal">
+        <div class="modal-box chuanyue-rules-modal">
+            <div class="modal-header">
+                <h3 id="rulesModalTitle">穿越设定</h3>
+                <button class="modal-close" id="rulesModalClose">
+                    <svg viewBox="0 0 28 28" fill="none">
+                        <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- 快穿任务类型选择 -->
+                <div class="form-item" id="kuaichuanTypeItem" style="display: none;">
+                    <label class="form-label">任务类型</label>
+                    <div class="kuaichuan-type-grid">
+                        <button class="kuaichuan-type-btn" data-type="ganhua">
+                            <div class="type-icon">💝</div>
+                            <div class="type-name">感化</div>
+                            <div class="type-desc">感化黑化/堕落的目标，让其重归正途</div>
+                        </button>
+                        <button class="kuaichuan-type-btn" data-type="jiushu">
+                            <div class="type-icon">🌟</div>
+                            <div class="type-name">救赎</div>
+                            <div class="type-desc">拯救悲惨命运的目标，改变其结局</div>
+                        </button>
+                        <button class="kuaichuan-type-btn" data-type="gonglue">
+                            <div class="type-icon">💕</div>
+                            <div class="type-name">攻略</div>
+                            <div class="type-desc">攻略目标角色，达成恋爱关系</div>
+                        </button>
+                        <button class="kuaichuan-type-btn" data-type="yangcheng">
+                            <div class="type-icon">🌱</div>
+                            <div class="type-name">养成</div>
+                            <div class="type-desc">培养目标成长，见证其蜕变</div>
+                        </button>
+                    </div>
+                    <input type="hidden" id="kuaichuanType" value="">
+                </div>
+                
+                <div class="form-item" id="rulesItem">
+                    <label class="form-label" id="rulesLabel">穿越规则</label>
+                    <textarea class="form-textarea" id="chuanyueRules" rows="4" placeholder="如：不能暴露穿越者身份、需要完成系统任务、可以保留前世记忆..."></textarea>
+                </div>
+                <div class="form-item" id="worldSettingsItem">
+                    <label class="form-label">世界设定</label>
+                    <textarea class="form-textarea" id="chuanyueSettings" rows="4" placeholder="如：古代宫廷、现代都市、修仙世界、ABO设定..."></textarea>
+                </div>
+                
+                <!-- AI Polish Button -->
+                <button class="ai-polish-btn" id="aiPolishBtn">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                    <span>AI 完善</span>
+                    <small>根据你填写的内容自动扩展完善</small>
+                </button>
+                <div class="form-item">
+                    <label class="form-label">性别设定</label>
+                    <div class="gender-setting-select" id="genderSettingSelect">
+                        <button class="gender-setting-btn" data-setting="keep">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 8 V16 M8 12 H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>保持当前</span>
+                            <small>穿越后保持原有性别</small>
+                        </button>
+                        <button class="gender-setting-btn" data-setting="random">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="8" cy="16" r="5" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="16" cy="8" r="5" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 12 L14 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>概率双性</span>
+                            <small>有一定概率变为双性体质</small>
+                        </button>
+                    </div>
+                    <input type="hidden" id="genderSetting" value="keep">
+                </div>
+                
+                <div class="form-item">
+                    <label class="form-label">特殊玩法</label>
+                    <div class="toggle-option" id="livestreamToggle">
+                        <div class="toggle-info">
+                            <div class="toggle-title">🎁 直播打赏模式</div>
+                            <div class="toggle-desc">开启后，会有虚拟观众实时打赏，打赏会触发随机事件影响剧情</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="livestreamEnabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="rulesModalCancel">取消</button>
+                <button class="modal-btn modal-btn-confirm" id="rulesModalConfirm">确认开始</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Profile Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-box profile-modal">
+            <div class="modal-header">
+                <h3 id="profileModalTitle">创建人设</h3>
+                <button class="modal-close" id="profileModalClose">
+                    <svg viewBox="0 0 28 28" fill="none">
+                        <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-item form-item-half">
+                        <label class="form-label">名字 <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="profileName" placeholder="你的角色名">
+                    </div>
+                    <div class="form-item form-item-half">
+                        <label class="form-label">年龄</label>
+                        <input type="number" class="form-input" id="profileAge" placeholder="如：18" min="1" max="999">
+                    </div>
+                </div>
+                <div class="form-item">
+                    <label class="form-label">性别</label>
+                    <div class="gender-select" id="genderSelect">
+                        <button class="gender-btn" data-gender="male">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="10" cy="14" r="6" stroke="currentColor" stroke-width="2"/>
+                                <path d="M14 10 L20 4 M20 4 L20 10 M20 4 L14 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>男</span>
+                        </button>
+                        <button class="gender-btn" data-gender="female">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="9" r="6" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 15 V22 M9 19 H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>女</span>
+                        </button>
+                        <button class="gender-btn" data-gender="other">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 2 V6 M12 18 V22 M2 12 H6 M18 12 H22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>其他</span>
+                        </button>
+                    </div>
+                    <input type="hidden" id="profileGender" value="">
+                </div>
+                <div class="form-item">
+                    <label class="form-label">性格</label>
+                    <input type="text" class="form-input" id="profilePersonality" placeholder="如：温柔、腹黑、傲娇...">
+                </div>
+                <div class="form-item">
+                    <label class="form-label">敏感带</label>
+                    <input type="text" class="form-input" id="profileSensitive" placeholder="如：耳朵、脖颈...">
+                </div>
+                <div class="form-item">
+                    <label class="form-label">备注</label>
+                    <textarea class="form-textarea" id="profileNotes" rows="4" placeholder="其他补充信息，如外貌特征、特殊能力、背景故事等..."></textarea>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="profileModalCancel">取消</button>
+                <button class="modal-btn modal-btn-confirm" id="profileModalSave">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-box settings-modal">
+            <div class="modal-header">
+                <h3>系统设置</h3>
+                <button class="modal-close" id="settingsClose">
+                    <svg viewBox="0 0 28 28" fill="none">
+                        <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-title">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2 L12 6 M12 18 L12 22 M2 12 L6 12 M18 12 L22 12" stroke="#c9a959" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="4" stroke="#c9a959" stroke-width="2"/>
+                    </svg>
+                    <span>API 配置</span>
+                </div>
+                
+                <div class="settings-item">
+                    <label class="settings-label">API 方案</label>
+                    <div class="input-with-btn">
+                        <select class="settings-select" id="apiSchemeSelect">
+                            <option value="">-- 选择已保存方案 --</option>
+                        </select>
+                        <button class="icon-btn" id="deleteScheme" title="删除方案">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-item">
+                    <label class="settings-label">API 地址</label>
+                    <input type="text" class="settings-input" id="apiBaseUrl" placeholder="https://api.openai.com/v1">
+                </div>
+                
+                <div class="settings-item">
+                    <label class="settings-label">API 密钥</label>
+                    <div class="input-with-btn">
+                        <input type="password" class="settings-input" id="apiKey" placeholder="sk-...">
+                        <button class="icon-btn" id="toggleApiKey" title="显示/隐藏">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M1 12 Q12 4 23 12 Q12 20 1 12" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-item">
+                    <label class="settings-label">选择模型</label>
+                    <div class="input-with-btn">
+                        <select class="settings-select" id="modelSelect">
+                            <option value="">请先拉取模型列表</option>
+                        </select>
+                        <button class="icon-btn" id="fetchModels" title="拉取模型">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M4 12 A8 8 0 1 1 12 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M4 8 L4 12 L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="fetch-status" id="fetchStatus"></div>
+                </div>
+                
+                <div class="settings-item">
+                    <div class="settings-label-row">
+                        <label class="settings-label">温度 (Temperature)</label>
+                        <span class="temperature-value" id="tempValue">0.7</span>
+                    </div>
+                    <div class="slider-wrapper">
+                        <input type="range" class="settings-slider" id="temperatureSlider" min="0" max="2" step="0.1" value="0.7">
+                        <div class="slider-labels">
+                            <span>精确</span>
+                            <span>平衡</span>
+                            <span>创意</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-actions">
+                    <button class="settings-btn settings-btn-test" id="testConnection">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M5 12 L10 17 L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>检测连接</span>
+                    </button>
+                    <button class="settings-btn settings-btn-save" id="saveSettings">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M19 21 H5 Q3 21 3 19 V5 Q3 3 5 3 H16 L21 8 V19 Q21 21 19 21 Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M7 3 V8 H15" stroke="currentColor" stroke-width="2"/>
+                            <rect x="7" y="13" width="10" height="8" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <span>保存设置</span>
+                    </button>
+                    <button class="settings-btn settings-btn-scheme" id="saveScheme">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5 V19 M5 12 H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>保存方案</span>
+                    </button>
+                </div>
+                
+                <div class="connection-status" id="connectionStatus"></div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-title">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="#c9a959" stroke-width="2"/>
+                        <path d="M12 2 A10 10 0 0 1 12 22" fill="#c9a959" opacity="0.3"/>
+                    </svg>
+                    <span>主题外观</span>
+                </div>
+                
+                <div class="settings-item">
+                    <label class="settings-label">选择主题</label>
+                    <div class="theme-grid" id="themeGrid">
+                        <div class="theme-option active" data-theme="dark-gold">
+                            <div class="theme-preview dark-gold"></div>
+                            <span>暗金（默认）</span>
+                        </div>
+                        <div class="theme-option" data-theme="dark-purple">
+                            <div class="theme-preview dark-purple"></div>
+                            <span>暗紫</span>
+                        </div>
+                        <div class="theme-option" data-theme="dark-blue">
+                            <div class="theme-preview dark-blue"></div>
+                            <span>暗蓝</span>
+                        </div>
+                        <div class="theme-option" data-theme="dark-green">
+                            <div class="theme-preview dark-green"></div>
+                            <span>暗绿</span>
+                        </div>
+                        <div class="theme-option" data-theme="light-gold">
+                            <div class="theme-preview light-gold"></div>
+                            <span>浅金</span>
+                        </div>
+                        <div class="theme-option" data-theme="light-pink">
+                            <div class="theme-preview light-pink"></div>
+                            <span>浅粉</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collection Modal -->
+    <div class="modal-overlay" id="collectionModal">
+        <div class="modal-box collection-modal">
+            <div class="modal-header">
+                <h3>收藏与存档</h3>
+                <button class="modal-close" id="collectionModalClose">
+                    <svg viewBox="0 0 28 28" fill="none">
+                        <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="collection-tabs">
+                <button class="collection-tab active" data-tab="favorites">收藏内容</button>
+                <button class="collection-tab" data-tab="archives">世界存档</button>
+            </div>
+            <div class="collection-panel active" id="favoritesPanel">
+                <div class="collection-list" id="favoritesList">
+                    <!-- Favorites will be added here -->
+                </div>
+                <div class="collection-empty" id="favoritesEmpty">
+                    <span>暂无收藏内容</span>
+                    <small>长按聊天消息可收藏</small>
+                </div>
+            </div>
+            <div class="collection-panel" id="archivesPanel">
+                <div class="collection-list" id="archivesList">
+                    <!-- Archives will be added here -->
+                </div>
+                <div class="collection-empty" id="archivesEmpty">
+                    <span>暂无世界存档</span>
+                    <small>在游戏中点击存档按钮保存</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Favorite Detail Modal -->
+    <div class="modal-overlay" id="favoriteDetailModal">
+        <div class="modal-box favorite-detail-modal">
+            <div class="modal-header">
+                <button class="modal-back" id="favoriteDetailBack">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M15 18 L9 12 L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h3 id="favoriteDetailTitle">收藏详情</h3>
+                <button class="modal-close" id="favoriteDetailClose">
+                    <svg viewBox="0 0 28 28" fill="none">
+                        <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="favorite-detail-content" id="favoriteDetailContent">
+                <!-- Content will be shown here -->
+            </div>
+            <div class="favorite-detail-meta" id="favoriteDetailMeta">
+                <!-- Meta info -->
+            </div>
+            <div class="favorite-detail-actions">
+                <button class="favorite-action-btn" id="favoriteCopyBtn">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <path d="M5 15 H4 Q2 15 2 13 V4 Q2 2 4 2 H13 Q15 2 15 4 V5" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>复制内容</span>
+                </button>
+                <button class="favorite-action-btn delete" id="favoriteDeleteBtn">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6 H21 M8 6 V4 a2 2 0 0 1 2-2 h4 a2 2 0 0 1 2 2 v2 M19 6 v14 a2 2 0 0 1-2 2 H7 a2 2 0 0 1-2-2 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>删除收藏</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div class="modal-overlay" id="shopModal">
+        <div class="modal-box shop-modal">
+            <div class="modal-header">
+                <h3>🛒 系统商城</h3>
+                <div class="shop-modal-points">
+                    <span class="points-icon">💎</span>
+                    <span id="shopModalPoints">0</span> 积分
+                </div>
+                <button class="modal-close" id="shopModalClose">
+                    <svg viewBox="0 0 28 28" fill="none">
+                        <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="shop-items" id="shopItems">
+                    <div class="shop-loading">正在加载商品...</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="refreshShopBtn">
+                    <svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;margin-right:4px;">
+                        <path d="M1 4 V10 H7 M23 20 V14 H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.51 9 A9 9 0 0 1 18.36 5.64 L23 10 M1 14 L5.64 18.36 A9 9 0 0 0 20.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    刷新商品
+                </button>
+                <button class="modal-btn modal-btn-confirm" id="shopModalConfirm">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
