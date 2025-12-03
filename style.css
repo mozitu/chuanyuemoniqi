@@ -1221,6 +1221,27 @@ input[type="range"] {
     color: var(--text-muted);
 }
 
+.settings-divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0 16px;
+    gap: 12px;
+}
+
+.settings-divider::before,
+.settings-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.settings-divider span {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
 .settings-actions {
     display: flex;
     gap: 10px;
@@ -1975,6 +1996,52 @@ input[type="range"] {
     line-height: 1.5;
 }
 
+/* Trans Char Section in Profile */
+.trans-char-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.trans-char-divider {
+    font-size: 11px;
+    color: var(--gold-primary);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.trans-char-divider::before,
+.trans-char-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-primary), transparent);
+    opacity: 0.3;
+}
+
+.trans-char-name {
+    color: var(--gold-primary);
+    font-weight: 600;
+}
+
+.trans-char-ability {
+    color: #7ec8e3;
+}
+
+.profile-info-item.full-width {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.profile-info-item.full-width .value {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 /* Sidebar Cards */
 .sidebar-card {
     background-color: var(--bg-dark);
@@ -2074,18 +2141,21 @@ input[type="range"] {
     color: var(--gold-primary);
 }
 
-.world-building-empty {
+.world-building-empty,
+.trans-char-empty {
     text-align: center;
     padding: 16px 0;
     color: var(--text-muted);
 }
 
-.world-building-empty p {
+.world-building-empty p,
+.trans-char-empty p {
     margin: 0 0 4px 0;
     font-size: 12px;
 }
 
-.world-building-empty small {
+.world-building-empty small,
+.trans-char-empty small {
     font-size: 11px;
     color: var(--red-primary);
     opacity: 0.8;
@@ -2170,6 +2240,95 @@ input[type="range"] {
     left: 0;
     top: 50%;
     transform: translateY(-50%);
+}
+
+/* Current Task Box */
+.current-task-box {
+    background: linear-gradient(135deg, rgba(126, 200, 227, 0.15) 0%, rgba(126, 200, 227, 0.05) 100%);
+    border: 1px solid rgba(126, 200, 227, 0.3);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.current-task-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #7ec8e3;
+    margin-bottom: 6px;
+}
+
+.current-task-content {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+/* World Mindmap Style */
+.world-mindmap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mindmap-node {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mindmap-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gold-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mindmap-title::before {
+    content: '◆';
+    font-size: 8px;
+}
+
+.mindmap-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-left: 14px;
+}
+
+.mindmap-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(201, 169, 89, 0.1);
+    border: 1px solid rgba(201, 169, 89, 0.2);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+    transition: all 0.2s ease;
+}
+
+.mindmap-tag:hover {
+    background: rgba(201, 169, 89, 0.2);
+    border-color: rgba(201, 169, 89, 0.4);
+}
+
+.mindmap-tag .tag-name {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.mindmap-tag .tag-desc {
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+.mindmap-tag .tag-desc::before {
+    content: '·';
+    margin-right: 2px;
 }
 
 /* Sidebar Restart Button */
@@ -2479,6 +2638,12 @@ input[type="range"] {
 .story-npc-name {
     color: var(--gold-primary);
     font-weight: 600;
+}
+
+.story-name {
+    color: #7ec8e3;
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(126, 200, 227, 0.3);
 }
 
 /* Map Grid */
