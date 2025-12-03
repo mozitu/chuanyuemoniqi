@@ -100,6 +100,17 @@
                     <div class="menu-title">设置</div>
                     <div class="menu-desc">系统配置</div>
                 </div>
+                <div class="menu-card" data-menu="others">
+                    <div class="menu-icon">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <circle cx="12" cy="24" r="4" fill="#c9a959"/>
+                            <circle cx="24" cy="24" r="4" fill="#c9a959"/>
+                            <circle cx="36" cy="24" r="4" fill="#c9a959"/>
+                        </svg>
+                    </div>
+                    <div class="menu-title">其他</div>
+                    <div class="menu-desc">更多功能</div>
+                </div>
             </div>
 
             <!-- Preset Section -->
@@ -326,6 +337,270 @@
 
         </div>
 
+        <!-- Settings Section -->
+        <div class="section" id="settingsSection">
+            <div class="others-container settings-page">
+                <div class="others-header">
+                    <button class="others-back" id="settingsBack">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M15 18 L9 12 L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h2>系统设置</h2>
+                </div>
+                
+                <div class="settings-page-content">
+                    <!-- API设置 -->
+                    <div class="settings-section">
+                        <div class="settings-title">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2 L12 6 M12 18 L12 22 M2 12 L6 12 M18 12 L22 12" stroke="#c9a959" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="12" cy="12" r="4" stroke="#c9a959" stroke-width="2"/>
+                            </svg>
+                            <span>API 配置</span>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="settings-label">API 方案</label>
+                            <div class="input-with-btn">
+                                <select class="settings-select" id="apiSchemeSelectPage">
+                                    <option value="">-- 选择已保存方案 --</option>
+                                </select>
+                                <button class="icon-btn" id="deleteSchemePage" title="删除方案">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="settings-label">API 地址</label>
+                            <input type="text" class="settings-input" id="apiBaseUrlPage" placeholder="https://api.openai.com/v1">
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="settings-label">API 密钥</label>
+                            <div class="input-with-btn">
+                                <input type="password" class="settings-input" id="apiKeyPage" placeholder="sk-...">
+                                <button class="icon-btn" id="toggleApiKeyPage" title="显示/隐藏">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M1 12 Q12 4 23 12 Q12 20 1 12" stroke="currentColor" stroke-width="2"/>
+                                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="settings-label">选择模型</label>
+                            <div class="input-with-btn">
+                                <select class="settings-select" id="modelSelectPage">
+                                    <option value="">请先拉取模型列表</option>
+                                </select>
+                                <button class="icon-btn" id="fetchModelsPage" title="拉取模型">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M4 12 A8 8 0 1 1 12 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        <path d="M4 8 L4 12 L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="fetch-status" id="fetchStatusPage"></div>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <div class="settings-label-row">
+                                <label class="settings-label">温度 (Temperature)</label>
+                                <span class="temperature-value" id="tempValuePage">0.7</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <input type="range" class="settings-slider" id="temperatureSliderPage" min="0" max="2" step="0.1" value="0.7">
+                                <div class="slider-labels">
+                                    <span>精确</span>
+                                    <span>平衡</span>
+                                    <span>创意</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-divider"><span>备用API（用于总结/数值记录，可选）</span></div>
+                        
+                        <div class="settings-item">
+                            <label class="settings-label">备用API地址</label>
+                            <input type="text" class="settings-input" id="backupApiBaseUrlPage" placeholder="留空则使用主API">
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="settings-label">备用API密钥</label>
+                            <div class="input-with-btn">
+                                <input type="password" class="settings-input" id="backupApiKeyPage" placeholder="留空则使用主API">
+                                <button class="icon-btn" id="toggleBackupApiKeyPage" title="显示/隐藏">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M1 12 Q12 4 23 12 Q12 20 1 12" stroke="currentColor" stroke-width="2"/>
+                                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="settings-label">备用模型</label>
+                            <div class="input-with-btn">
+                                <select class="settings-select" id="backupModelSelectPage">
+                                    <option value="">留空则使用主模型</option>
+                                </select>
+                                <button class="icon-btn" id="fetchBackupModelsPage" title="拉取备用API模型">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M4 12 A8 8 0 1 1 12 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        <path d="M4 8 L4 12 L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="fetch-status" id="backupFetchStatusPage"></div>
+                        </div>
+                        
+                        <div class="settings-actions">
+                            <button class="settings-btn settings-btn-test" id="testConnectionPage">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M5 12 L10 17 L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>检测API</span>
+                            </button>
+                            <button class="settings-btn settings-btn-save" id="saveSettingsPage">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M19 21 H5 Q3 21 3 19 V5 Q3 3 5 3 H16 L21 8 V19 Q21 21 19 21 Z" stroke="currentColor" stroke-width="2"/><path d="M7 3 V8 H15" stroke="currentColor" stroke-width="2"/><rect x="7" y="13" width="10" height="8" stroke="currentColor" stroke-width="2"/></svg>
+                                <span>保存设置</span>
+                            </button>
+                            <button class="settings-btn settings-btn-scheme" id="saveSchemePage">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M12 5 V19 M5 12 H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                <span>保存方案</span>
+                            </button>
+                        </div>
+                        <div class="connection-status" id="connectionStatusPage"></div>
+                    </div>
+                    
+                    <!-- 主题设置 -->
+                    <div class="settings-section">
+                        <div class="settings-title">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="#c9a959" stroke-width="2"/>
+                                <path d="M12 2 A10 10 0 0 1 12 22" fill="#c9a959" opacity="0.3"/>
+                            </svg>
+                            <span>主题外观</span>
+                        </div>
+                        <div class="settings-item">
+                            <label class="settings-label">选择主题</label>
+                            <div class="theme-grid" id="themeGridPage">
+                                <div class="theme-option active" data-theme="dark-gold">
+                                    <div class="theme-preview dark-gold"></div>
+                                    <span>暗金</span>
+                                </div>
+                                <div class="theme-option" data-theme="dark-purple">
+                                    <div class="theme-preview dark-purple"></div>
+                                    <span>暗紫</span>
+                                </div>
+                                <div class="theme-option" data-theme="dark-blue">
+                                    <div class="theme-preview dark-blue"></div>
+                                    <span>暗蓝</span>
+                                </div>
+                                <div class="theme-option" data-theme="dark-green">
+                                    <div class="theme-preview dark-green"></div>
+                                    <span>暗绿</span>
+                                </div>
+                                <div class="theme-option" data-theme="light-gold">
+                                    <div class="theme-preview light-gold"></div>
+                                    <span>浅金</span>
+                                </div>
+                                <div class="theme-option" data-theme="light-pink">
+                                    <div class="theme-preview light-pink"></div>
+                                    <span>浅粉</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据管理 -->
+                    <div class="settings-section">
+                        <div class="settings-title">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M4 7V4h16v3M9 20h6M12 4v16" stroke="#c9a959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>数据管理</span>
+                        </div>
+                        <div class="others-content">
+                            <div class="others-card" id="exportDataCard">
+                                <div class="others-card-icon">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#c9a959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M7 10l5 5 5-5" stroke="#c9a959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M12 15V3" stroke="#c9a959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="others-card-info">
+                                    <div class="others-card-title">导出数据</div>
+                                    <div class="others-card-desc">导出所有游戏数据到文件</div>
+                                </div>
+                            </div>
+                            <div class="others-card" id="importDataCard">
+                                <div class="others-card-icon">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#c9a959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M17 8l-5-5-5 5" stroke="#c9a959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M12 3v12" stroke="#c9a959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="others-card-info">
+                                    <div class="others-card-title">导入数据</div>
+                                    <div class="others-card-desc">从文件导入游戏数据</div>
+                                </div>
+                            </div>
+                            <div class="others-card" id="clearAllDataCard">
+                                <div class="others-card-icon danger">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="others-card-info">
+                                    <div class="others-card-title">清除所有数据</div>
+                                    <div class="others-card-desc">清除全部本地存储数据</div>
+                                </div>
+                            </div>
+                            <div class="others-card" id="aboutCard">
+                                <div class="others-card-icon">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="10" stroke="#c9a959" stroke-width="2"/>
+                                        <path d="M12 16v-4M12 8h.01" stroke="#c9a959" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                <div class="others-card-info">
+                                    <div class="others-card-title">关于</div>
+                                    <div class="others-card-desc">版本信息与使用说明</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="file" id="importFileInput" accept=".json" style="display:none;">
+        </div>
+
+        <!-- Others Section -->
+        <div class="section" id="othersSection">
+            <div class="others-container">
+                <div class="others-header">
+                    <button class="others-back" id="othersBack">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M15 18 L9 12 L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h2>其他功能</h2>
+                </div>
+                <div class="others-content">
+                    <div class="others-empty">
+                        <p>暂无其他功能</p>
+                        <small>敬请期待</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Chuanyue (Transmigration) Section -->
         <div class="section" id="chuanyueSection">
             <!-- Sidebar Overlay -->
@@ -339,11 +614,19 @@
                         </svg>
                     </button>
                     <h2 id="gameModeTitle">穿越模式</h2>
-                    <button class="sidebar-toggle" id="sidebarToggle">
-                        <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M4 6 H20 M4 12 H20 M4 18 H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
+                    <div class="sidebar-header-actions">
+                        <button class="sidebar-clear-btn" id="clearAllDataBtn" title="清除本模式所有数据">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6 H5 H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M8 6 V4 a2 2 0 0 1 2-2 h4 a2 2 0 0 1 2 2 v2 m3 0 v14 a2 2 0 0 1-2 2 H7 a2 2 0 0 1-2-2 V6 h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button class="sidebar-toggle" id="sidebarToggle">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M4 6 H20 M4 12 H20 M4 18 H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="sidebar-content">
@@ -367,6 +650,24 @@
                             <div class="profile-empty">
                                 <p>尚未设置人设</p>
                                 <button class="profile-create-btn" id="createProfileBtn">创建人设</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Role Identity Card (穿书/无限流专用) -->
+                    <div class="profile-card role-identity-card" id="roleIdentityCard" style="display: none;">
+                        <div class="profile-header">
+                            <div class="profile-icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="8" r="4" stroke="#c9a959" stroke-width="2"/>
+                                    <path d="M4 20 Q4 14 12 14 Q20 14 20 20" stroke="#c9a959" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="profile-title" id="roleIdentityTitle">角色身份</div>
+                        </div>
+                        <div class="profile-body" id="roleIdentityBody">
+                            <div class="profile-empty">
+                                <p>尚未设置角色</p>
                             </div>
                         </div>
                     </div>
@@ -791,11 +1092,6 @@
             <div class="modal-header">
                 <h3>📊 状态栏</h3>
                 <div class="modal-header-actions">
-                    <button class="modal-refresh-btn" id="statusRefreshBtn" title="AI刷新状态">
-                        <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M21 12a9 9 0 11-2.63-6.36M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </button>
                     <button class="modal-close" id="statusModalClose">
                         <svg viewBox="0 0 24 24" fill="none">
                             <path d="M18 6 L6 18 M6 6 L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1441,6 +1737,29 @@
                     刷新商品
                 </button>
                 <button class="modal-btn modal-btn-confirm" id="shopModalConfirm">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Dialog -->
+    <div class="custom-dialog-overlay" id="customDialogOverlay">
+        <div class="custom-dialog" id="customDialog">
+            <div class="custom-dialog-header">
+                <div class="custom-dialog-icon" id="customDialogIcon">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h3 id="customDialogTitle">提示</h3>
+            </div>
+            <div class="custom-dialog-body">
+                <p id="customDialogMessage"></p>
+                <input type="text" class="custom-dialog-input" id="customDialogInput" style="display:none;">
+            </div>
+            <div class="custom-dialog-actions">
+                <button class="custom-dialog-btn cancel" id="customDialogCancel">取消</button>
+                <button class="custom-dialog-btn confirm" id="customDialogConfirm">确定</button>
             </div>
         </div>
     </div>

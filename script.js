@@ -1,3 +1,132 @@
+// 自定义弹窗函数
+function showCustomDialog(options) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('customDialogOverlay');
+        const dialog = document.getElementById('customDialog');
+        const icon = document.getElementById('customDialogIcon');
+        const title = document.getElementById('customDialogTitle');
+        const message = document.getElementById('customDialogMessage');
+        const input = document.getElementById('customDialogInput');
+        const cancelBtn = document.getElementById('customDialogCancel');
+        const confirmBtn = document.getElementById('customDialogConfirm');
+        
+        // 设置内容
+        title.textContent = options.title || '提示';
+        message.textContent = options.message || '';
+        
+        // 设置图标类型
+        icon.className = 'custom-dialog-icon';
+        if (options.type === 'warning') icon.classList.add('warning');
+        else if (options.type === 'danger') icon.classList.add('danger');
+        else if (options.type === 'success') icon.classList.add('success');
+        
+        // 设置图标SVG
+        const iconSvgs = {
+            info: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+            warning: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L22 20 H2 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+            danger: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+            success: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 12l3 3 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        };
+        icon.innerHTML = iconSvgs[options.type] || iconSvgs.info;
+        
+        // 输入框
+        if (options.showInput) {
+            input.style.display = 'block';
+            input.value = options.inputValue || '';
+            input.placeholder = options.inputPlaceholder || '';
+            setTimeout(() => input.focus(), 100);
+        } else {
+            input.style.display = 'none';
+        }
+        
+        // 按钮
+        if (options.showCancel === false) {
+            cancelBtn.style.display = 'none';
+        } else {
+            cancelBtn.style.display = 'block';
+            cancelBtn.textContent = options.cancelText || '取消';
+        }
+        confirmBtn.textContent = options.confirmText || '确定';
+        confirmBtn.className = 'custom-dialog-btn confirm';
+        if (options.type === 'danger') confirmBtn.classList.add('danger');
+        
+        // 显示弹窗
+        overlay.classList.add('active');
+        
+        // 事件处理
+        function close(result) {
+            overlay.classList.remove('active');
+            cancelBtn.onclick = null;
+            confirmBtn.onclick = null;
+            resolve(result);
+        }
+        
+        cancelBtn.onclick = () => close(options.showInput ? null : false);
+        confirmBtn.onclick = () => close(options.showInput ? input.value : true);
+        
+        // ESC关闭
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                close(options.showInput ? null : false);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+        
+        // Enter确认
+        if (options.showInput) {
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    close(input.value);
+                }
+            };
+        }
+    });
+}
+
+// 替代原生 alert
+function customAlert(message, title = '提示') {
+    return showCustomDialog({
+        title,
+        message,
+        type: 'info',
+        showCancel: false
+    });
+}
+
+// 替代原生 confirm
+function customConfirm(message, title = '确认', type = 'warning') {
+    return showCustomDialog({
+        title,
+        message,
+        type,
+        showCancel: true
+    });
+}
+
+// 危险操作确认
+function customDangerConfirm(message, title = '危险操作') {
+    return showCustomDialog({
+        title,
+        message,
+        type: 'danger',
+        showCancel: true,
+        confirmText: '确定删除'
+    });
+}
+
+// 替代原生 prompt
+function customPrompt(message, defaultValue = '', title = '请输入') {
+    return showCustomDialog({
+        title,
+        message,
+        type: 'info',
+        showInput: true,
+        inputValue: defaultValue,
+        showCancel: true
+    });
+}
+
 // State
 const state = {
     totalPoints: 100,
@@ -598,17 +727,19 @@ function restorePageState() {
         const worldBuildingTitle = document.querySelector('#worldBuildingCard .sidebar-card-title');
         const shopCard = document.getElementById('shopCard');
         const profileCard = document.getElementById('profileCard');
+        const roleIdentityCard = document.getElementById('roleIdentityCard');
         
-        // 穿书模式和无限流模式隐藏穿越人设卡片（角色设定已在副本资料中显示）
-        if (transCharCard) {
-            transCharCard.style.display = (gameMode === 'chuanshu' || gameMode === 'wuxianliu') ? 'none' : '';
+        // 穿书模式和无限流模式使用角色身份卡片，其他模式使用人设卡片
+        if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
+            if (transCharCard) transCharCard.remove();
+            if (profileCard) profileCard.remove();
+            if (roleIdentityCard) roleIdentityCard.style.display = 'block';
+        } else {
+            if (transCharCard) transCharCard.style.display = '';
+            if (profileCard) profileCard.style.display = '';
+            if (roleIdentityCard) roleIdentityCard.style.display = 'none';
         }
         if (worldBuildingCard) worldBuildingCard.style.display = '';
-        
-        // 穿书模式和无限流模式隐藏人设卡片
-        if (profileCard) {
-            profileCard.style.display = (gameMode === 'chuanshu' || gameMode === 'wuxianliu') ? 'none' : '';
-        }
         
         if (gameMode === 'kuaichuan') {
             if (worldInfoTitle) worldInfoTitle.textContent = '快穿系统';
@@ -637,9 +768,14 @@ function restorePageState() {
             }
         }
         
-        renderProfile();
+        // 穿书和无限流模式渲染角色身份，其他模式渲染人设
+        if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
+            renderRoleIdentity();
+        } else {
+            renderProfile();
+            renderTransChar();
+        }
         renderWorldInfo();
-        renderTransChar();
         renderWorldBuilding();
         renderPlayerStatus();
         renderCharactersList();
@@ -906,7 +1042,7 @@ function setupMenuCards() {
         card.addEventListener('click', () => {
             const menu = card.dataset.menu;
             if (menu === 'settings') {
-                openSettingsModal();
+                openSettingsSection();
             } else if (menu === 'chuanyue') {
                 gameMode = 'chuanyue';
                 localStorage.setItem('gameMode', gameMode);
@@ -931,9 +1067,447 @@ function setupMenuCards() {
                 loadModeData();
                 openChuanyueMode();
                 refreshModeUI();
+            } else if (menu === 'others') {
+                openOthersSection();
             }
         });
     });
+}
+
+// Settings Section (页面模式)
+function openSettingsSection() {
+    document.getElementById('mainSection').classList.remove('active');
+    document.getElementById('settingsSection').classList.add('active');
+    currentPage = 'settings';
+    loadSettingsPage();
+    setupSettingsPageEvents();
+}
+
+function closeSettingsSection() {
+    document.getElementById('settingsSection').classList.remove('active');
+    document.getElementById('mainSection').classList.add('active');
+    currentPage = 'main';
+}
+
+function loadSettingsPage() {
+    // 加载已保存的设置到页面
+    document.getElementById('apiBaseUrlPage').value = apiSettings.baseUrl;
+    document.getElementById('apiKeyPage').value = apiSettings.apiKey;
+    document.getElementById('temperatureSliderPage').value = apiSettings.temperature;
+    document.getElementById('tempValuePage').textContent = apiSettings.temperature;
+    document.getElementById('backupApiBaseUrlPage').value = apiSettings.backupBaseUrl || '';
+    document.getElementById('backupApiKeyPage').value = apiSettings.backupApiKey || '';
+    
+    // 加载已保存的模型
+    const modelSelect = document.getElementById('modelSelectPage');
+    if (apiSettings.model) {
+        const option = document.createElement('option');
+        option.value = apiSettings.model;
+        option.textContent = apiSettings.model;
+        option.selected = true;
+        modelSelect.innerHTML = '';
+        modelSelect.appendChild(option);
+    }
+    
+    const backupModelSelect = document.getElementById('backupModelSelectPage');
+    if (apiSettings.backupModel) {
+        const option = document.createElement('option');
+        option.value = apiSettings.backupModel;
+        option.textContent = apiSettings.backupModel;
+        option.selected = true;
+        backupModelSelect.innerHTML = '<option value="">留空则使用主模型</option>';
+        backupModelSelect.appendChild(option);
+    }
+    
+    // 加载API方案
+    loadApiSchemesPage();
+    
+    // 加载主题
+    loadThemePage();
+}
+
+function loadApiSchemesPage() {
+    const select = document.getElementById('apiSchemeSelectPage');
+    select.innerHTML = '<option value="">-- 选择已保存方案 --</option>';
+    const schemes = JSON.parse(localStorage.getItem('apiSchemes') || '[]');
+    schemes.forEach(scheme => {
+        const option = document.createElement('option');
+        option.value = scheme.name;
+        option.textContent = scheme.name;
+        select.appendChild(option);
+    });
+}
+
+function loadThemePage() {
+    const currentTheme = localStorage.getItem('theme') || 'dark-gold';
+    document.querySelectorAll('#themeGridPage .theme-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.theme === currentTheme);
+    });
+}
+
+function setupSettingsPageEvents() {
+    // 返回按钮
+    document.getElementById('settingsBack').onclick = closeSettingsSection;
+    
+    // 温度滑块
+    document.getElementById('temperatureSliderPage').oninput = (e) => {
+        document.getElementById('tempValuePage').textContent = e.target.value;
+    };
+    
+    // 显示/隐藏API密钥
+    document.getElementById('toggleApiKeyPage').onclick = () => {
+        const input = document.getElementById('apiKeyPage');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    };
+    document.getElementById('toggleBackupApiKeyPage').onclick = () => {
+        const input = document.getElementById('backupApiKeyPage');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    };
+    
+    // 拉取模型
+    document.getElementById('fetchModelsPage').onclick = fetchModelsPage;
+    document.getElementById('fetchBackupModelsPage').onclick = fetchBackupModelsPage;
+    
+    // 检测连接
+    document.getElementById('testConnectionPage').onclick = testConnectionPage;
+    
+    // 保存设置
+    document.getElementById('saveSettingsPage').onclick = saveSettingsPage;
+    
+    // 保存方案
+    document.getElementById('saveSchemePage').onclick = saveSchemePage;
+    
+    // 删除方案
+    document.getElementById('deleteSchemePage').onclick = deleteSchemePage;
+    
+    // 加载方案
+    document.getElementById('apiSchemeSelectPage').onchange = loadSchemePage;
+    
+    // 主题选择
+    document.querySelectorAll('#themeGridPage .theme-option').forEach(opt => {
+        opt.onclick = () => {
+            document.querySelectorAll('#themeGridPage .theme-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            const theme = opt.dataset.theme;
+            document.body.className = `theme-${theme}`;
+            localStorage.setItem('theme', theme);
+        };
+    });
+    
+    // 数据管理功能
+    document.getElementById('exportDataCard').onclick = exportAllData;
+    document.getElementById('importDataCard').onclick = () => {
+        document.getElementById('importFileInput').click();
+    };
+    document.getElementById('importFileInput').onchange = importAllData;
+    document.getElementById('clearAllDataCard').onclick = clearAllStorageData;
+    document.getElementById('aboutCard').onclick = showAboutInfo;
+}
+
+async function fetchModelsPage() {
+    const baseUrl = document.getElementById('apiBaseUrlPage').value;
+    const apiKey = document.getElementById('apiKeyPage').value;
+    const status = document.getElementById('fetchStatusPage');
+    
+    if (!baseUrl || !apiKey) {
+        status.textContent = '请先填写API地址和密钥';
+        status.className = 'fetch-status error';
+        return;
+    }
+    
+    status.textContent = '正在拉取...';
+    status.className = 'fetch-status';
+    
+    try {
+        const response = await fetch(baseUrl.replace(/\/$/, '') + '/models', {
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (!response.ok) throw new Error('拉取失败');
+        const data = await response.json();
+        const models = data.data || [];
+        
+        const select = document.getElementById('modelSelectPage');
+        select.innerHTML = '<option value="">-- 选择模型 --</option>';
+        models.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.id;
+            select.appendChild(option);
+        });
+        
+        status.textContent = `成功拉取 ${models.length} 个模型`;
+        status.className = 'fetch-status success';
+    } catch (error) {
+        status.textContent = '拉取失败: ' + error.message;
+        status.className = 'fetch-status error';
+    }
+}
+
+async function fetchBackupModelsPage() {
+    const baseUrl = document.getElementById('backupApiBaseUrlPage').value;
+    const apiKey = document.getElementById('backupApiKeyPage').value;
+    const status = document.getElementById('backupFetchStatusPage');
+    
+    if (!baseUrl || !apiKey) {
+        status.textContent = '请先填写备用API地址和密钥';
+        status.className = 'fetch-status error';
+        return;
+    }
+    
+    status.textContent = '正在拉取...';
+    status.className = 'fetch-status';
+    
+    try {
+        const response = await fetch(baseUrl.replace(/\/$/, '') + '/models', {
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (!response.ok) throw new Error('拉取失败');
+        const data = await response.json();
+        const models = data.data || [];
+        
+        const select = document.getElementById('backupModelSelectPage');
+        select.innerHTML = '<option value="">留空则使用主模型</option>';
+        models.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.id;
+            select.appendChild(option);
+        });
+        
+        status.textContent = `成功拉取 ${models.length} 个模型`;
+        status.className = 'fetch-status success';
+    } catch (error) {
+        status.textContent = '拉取失败: ' + error.message;
+        status.className = 'fetch-status error';
+    }
+}
+
+async function testConnectionPage() {
+    const baseUrl = document.getElementById('apiBaseUrlPage').value;
+    const apiKey = document.getElementById('apiKeyPage').value;
+    const model = document.getElementById('modelSelectPage').value;
+    const status = document.getElementById('connectionStatusPage');
+    
+    if (!baseUrl || !apiKey || !model) {
+        status.textContent = '请先填写完整的API配置';
+        status.className = 'connection-status error';
+        return;
+    }
+    
+    status.textContent = '正在检测...';
+    status.className = 'connection-status';
+    
+    try {
+        const response = await fetch(baseUrl.replace(/\/$/, '') + '/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: model,
+                messages: [{ role: 'user', content: 'Hi' }],
+                max_tokens: 5
+            })
+        });
+        
+        if (!response.ok) throw new Error('连接失败');
+        
+        status.textContent = '✓ API连接正常';
+        status.className = 'connection-status success';
+    } catch (error) {
+        status.textContent = '✗ 连接失败: ' + error.message;
+        status.className = 'connection-status error';
+    }
+}
+
+function saveSettingsPage() {
+    apiSettings.baseUrl = document.getElementById('apiBaseUrlPage').value;
+    apiSettings.apiKey = document.getElementById('apiKeyPage').value;
+    apiSettings.model = document.getElementById('modelSelectPage').value;
+    apiSettings.temperature = parseFloat(document.getElementById('temperatureSliderPage').value);
+    apiSettings.backupBaseUrl = document.getElementById('backupApiBaseUrlPage').value;
+    apiSettings.backupApiKey = document.getElementById('backupApiKeyPage').value;
+    apiSettings.backupModel = document.getElementById('backupModelSelectPage').value;
+    
+    localStorage.setItem('apiSettings', JSON.stringify(apiSettings));
+    showToast('设置已保存');
+}
+
+async function saveSchemePage() {
+    const name = await customPrompt('', '', '请输入方案名称');
+    if (!name) return;
+    
+    const scheme = {
+        name: name,
+        baseUrl: document.getElementById('apiBaseUrlPage').value,
+        apiKey: document.getElementById('apiKeyPage').value,
+        model: document.getElementById('modelSelectPage').value,
+        temperature: parseFloat(document.getElementById('temperatureSliderPage').value),
+        backupBaseUrl: document.getElementById('backupApiBaseUrlPage').value,
+        backupApiKey: document.getElementById('backupApiKeyPage').value,
+        backupModel: document.getElementById('backupModelSelectPage').value
+    };
+    
+    const schemes = JSON.parse(localStorage.getItem('apiSchemes') || '[]');
+    const existingIndex = schemes.findIndex(s => s.name === name);
+    if (existingIndex >= 0) {
+        schemes[existingIndex] = scheme;
+    } else {
+        schemes.push(scheme);
+    }
+    
+    localStorage.setItem('apiSchemes', JSON.stringify(schemes));
+    loadApiSchemesPage();
+    showToast('方案已保存');
+}
+
+async function deleteSchemePage() {
+    const select = document.getElementById('apiSchemeSelectPage');
+    const name = select.value;
+    if (!name) {
+        showToast('请先选择要删除的方案');
+        return;
+    }
+    
+    if (!await customConfirm(`确定要删除方案"${name}"吗？`, '删除方案')) return;
+    
+    const schemes = JSON.parse(localStorage.getItem('apiSchemes') || '[]');
+    const filtered = schemes.filter(s => s.name !== name);
+    localStorage.setItem('apiSchemes', JSON.stringify(filtered));
+    loadApiSchemesPage();
+    showToast('方案已删除');
+}
+
+function loadSchemePage() {
+    const select = document.getElementById('apiSchemeSelectPage');
+    const name = select.value;
+    if (!name) return;
+    
+    const schemes = JSON.parse(localStorage.getItem('apiSchemes') || '[]');
+    const scheme = schemes.find(s => s.name === name);
+    if (!scheme) return;
+    
+    document.getElementById('apiBaseUrlPage').value = scheme.baseUrl || '';
+    document.getElementById('apiKeyPage').value = scheme.apiKey || '';
+    document.getElementById('temperatureSliderPage').value = scheme.temperature || 0.7;
+    document.getElementById('tempValuePage').textContent = scheme.temperature || 0.7;
+    document.getElementById('backupApiBaseUrlPage').value = scheme.backupBaseUrl || '';
+    document.getElementById('backupApiKeyPage').value = scheme.backupApiKey || '';
+    
+    // 设置模型选项
+    if (scheme.model) {
+        const modelSelect = document.getElementById('modelSelectPage');
+        const option = document.createElement('option');
+        option.value = scheme.model;
+        option.textContent = scheme.model;
+        option.selected = true;
+        modelSelect.innerHTML = '';
+        modelSelect.appendChild(option);
+    }
+    if (scheme.backupModel) {
+        const backupModelSelect = document.getElementById('backupModelSelectPage');
+        const option = document.createElement('option');
+        option.value = scheme.backupModel;
+        option.textContent = scheme.backupModel;
+        option.selected = true;
+        backupModelSelect.innerHTML = '<option value="">留空则使用主模型</option>';
+        backupModelSelect.appendChild(option);
+    }
+    
+    showToast('方案已加载');
+}
+
+// Others Section
+function openOthersSection() {
+    document.getElementById('mainSection').classList.remove('active');
+    document.getElementById('othersSection').classList.add('active');
+    currentPage = 'others';
+    document.getElementById('othersBack').onclick = closeOthersSection;
+}
+
+function closeOthersSection() {
+    document.getElementById('othersSection').classList.remove('active');
+    document.getElementById('mainSection').classList.add('active');
+    currentPage = 'main';
+}
+
+// 导出所有数据
+function exportAllData() {
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        data[key] = localStorage.getItem(key);
+    }
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `穿越系统数据_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('数据已导出');
+}
+
+// 导入所有数据
+function importAllData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            
+            if (await customConfirm('导入将覆盖当前所有数据，是否继续？', '导入数据')) {
+                // 清除现有数据
+                localStorage.clear();
+                
+                // 导入新数据
+                for (const key in data) {
+                    localStorage.setItem(key, data[key]);
+                }
+                
+                showToast('数据导入成功，页面将刷新');
+                setTimeout(() => location.reload(), 1000);
+            }
+        } catch (error) {
+            showToast('导入失败：文件格式错误');
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // 清空input以便再次选择同一文件
+}
+
+// 清除所有存储数据
+async function clearAllStorageData() {
+    if (await customDangerConfirm('确定要清除所有数据吗？\n\n这将删除：\n• 所有模式的存档\n• 所有预设和世界书\n• API设置\n• 所有自定义配置\n\n此操作不可恢复！', '清除所有数据')) {
+        if (await customDangerConfirm('再次确认：真的要删除所有数据吗？', '最终确认')) {
+            localStorage.clear();
+            showToast('所有数据已清除，页面将刷新');
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+}
+
+// 显示关于信息
+function showAboutInfo() {
+    customAlert(`版本：1.0.0
+
+功能：
+• 穿越模式 - 经典穿越体验
+• 快穿模式 - 多世界穿梭任务
+• 穿书模式 - 进入小说世界
+• 无限流模式 - 副本生存挑战
+
+使用说明：
+1. 先在设置中配置API
+2. 选择游戏模式开始游戏
+3. 可在预设中设定AI行为
+4. 世界书可添加背景知识
+
+数据存储在本地浏览器中。`, '穿越系统模拟器');
 }
 
 // Settings Modal
@@ -1446,7 +2020,7 @@ function renderApiSchemes() {
 }
 
 // Save current settings as a new scheme
-function saveApiScheme() {
+async function saveApiScheme() {
     const baseUrl = document.getElementById('apiBaseUrl').value.trim();
     const apiKey = document.getElementById('apiKey').value.trim();
     const model = document.getElementById('modelSelect').value;
@@ -1458,7 +2032,7 @@ function saveApiScheme() {
     }
 
     // Prompt for scheme name
-    const schemeName = prompt('请输入方案名称：', '');
+    const schemeName = await customPrompt('', '', '请输入方案名称');
     if (!schemeName || !schemeName.trim()) {
         return;
     }
@@ -1466,7 +2040,7 @@ function saveApiScheme() {
     // Check if name already exists
     const existingIndex = apiSchemes.findIndex(s => s.name === schemeName.trim());
     if (existingIndex !== -1) {
-        if (confirm('方案名称已存在，是否覆盖？')) {
+        if (await customConfirm('方案名称已存在，是否覆盖？', '覆盖方案')) {
             apiSchemes[existingIndex] = {
                 ...apiSchemes[existingIndex],
                 baseUrl,
@@ -1534,7 +2108,7 @@ function loadApiScheme() {
 }
 
 // Delete selected scheme
-function deleteApiScheme() {
+async function deleteApiScheme() {
     const schemeSelect = document.getElementById('apiSchemeSelect');
     const schemeId = schemeSelect.value;
 
@@ -1548,7 +2122,7 @@ function deleteApiScheme() {
         return;
     }
 
-    if (!confirm('确定要删除方案 "' + scheme.name + '" 吗？')) {
+    if (!await customConfirm('确定要删除方案 "' + scheme.name + '" 吗？', '删除方案')) {
         return;
     }
 
@@ -1730,17 +2304,17 @@ function copyCurrentFavorite() {
     showToast('内容已复制到剪贴板');
 }
 
-function deleteCurrentFavorite() {
+async function deleteCurrentFavorite() {
     if (!currentViewingFavoriteId) return;
     
-    if (!confirm('确定要删除这条收藏吗？')) return;
+    if (!await customConfirm('确定要删除这条收藏吗？', '删除收藏')) return;
     
     removeFavorite(currentViewingFavoriteId);
     closeFavoriteDetailModal();
 }
 
-function saveArchive(name = '') {
-    const archiveName = name || prompt('请输入存档名称：', `${chuanyueRulesData?.settings?.substring(0, 15) || '世界'} - ${new Date().toLocaleDateString()}`);
+async function saveArchive(name = '') {
+    const archiveName = name || await customPrompt('', `${chuanyueRulesData?.settings?.substring(0, 15) || '世界'} - ${new Date().toLocaleDateString()}`, '请输入存档名称');
     if (!archiveName) return;
     
     const archive = {
@@ -1776,11 +2350,11 @@ function saveArchive(name = '') {
     showToast('世界存档成功');
 }
 
-function loadArchive(id) {
+async function loadArchive(id) {
     const archive = archives.find(a => a.id === id);
     if (!archive) return;
     
-    if (!confirm(`确定要加载存档"${archive.name}"吗？\n当前进度将被覆盖。`)) return;
+    if (!await customConfirm(`确定要加载存档"${archive.name}"吗？\n当前进度将被覆盖。`, '加载存档')) return;
     
     // Switch to archive's mode
     gameMode = archive.mode;
@@ -1829,8 +2403,8 @@ function loadArchive(id) {
     location.reload();
 }
 
-function removeArchive(id) {
-    if (!confirm('确定要删除此存档吗？')) return;
+async function removeArchive(id) {
+    if (!await customConfirm('确定要删除此存档吗？', '删除存档')) return;
     
     archives = archives.filter(a => a.id !== id);
     localStorage.setItem('archives', JSON.stringify(archives));
@@ -2665,6 +3239,12 @@ function setupChuanyueMode() {
     // Toggle sidebar
     toggleBtn.addEventListener('click', toggleSidebar);
     
+    // Clear all data button
+    const clearAllDataBtn = document.getElementById('clearAllDataBtn');
+    if (clearAllDataBtn) {
+        clearAllDataBtn.addEventListener('click', confirmClearAllData);
+    }
+    
     // Floating menu button to expand sidebar
     floatingMenuBtn.addEventListener('click', expandSidebar);
     
@@ -3487,16 +4067,12 @@ function openChuanyueMode() {
     const shopCard = document.getElementById('shopCard');
     const profileCard = document.getElementById('profileCard');
     
-    // 穿书模式和无限流模式隐藏穿越人设卡片（角色设定已在副本资料中显示）
-    if (transCharCard) {
-        transCharCard.style.display = (gameMode === 'chuanshu' || gameMode === 'wuxianliu') ? 'none' : '';
+    // 穿书模式和无限流模式删除人设卡片
+    if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
+        if (transCharCard) transCharCard.remove();
+        if (profileCard) profileCard.remove();
     }
     if (worldBuildingCard) worldBuildingCard.style.display = '';
-    
-    // 穿书模式和无限流模式隐藏人设卡片
-    if (profileCard) {
-        profileCard.style.display = (gameMode === 'chuanshu' || gameMode === 'wuxianliu') ? 'none' : '';
-    }
     
     if (gameMode === 'kuaichuan') {
         if (worldInfoTitle) worldInfoTitle.textContent = '快穿系统';
@@ -3524,24 +4100,35 @@ function openChuanyueMode() {
         }
     }
     
-    renderProfile();
+    // 穿书和无限流模式渲染角色身份，其他模式渲染人设
+    if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
+        renderRoleIdentity();
+    } else {
+        renderProfile();
+        renderTransChar();
+    }
     renderWorldInfo();
-    renderTransChar();
     renderWorldBuilding();
 }
 
 // 刷新模式UI（切换模式后调用）
 function refreshModeUI() {
-    // 穿书模式隐藏人设卡片
-    const profileCard = document.getElementById('profileCard');
-    if (profileCard) {
-        profileCard.style.display = gameMode === 'chuanshu' ? 'none' : '';
+    // 穿书模式和无限流模式删除人设卡片
+    if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
+        const profileCard = document.getElementById('profileCard');
+        const transCharCard = document.getElementById('transCharCard');
+        if (profileCard) profileCard.remove();
+        if (transCharCard) transCharCard.remove();
     }
     
     // 渲染侧边栏内容
-    renderProfile();
+    if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
+        renderRoleIdentity();
+    } else {
+        renderProfile();
+        renderTransChar();
+    }
     renderWorldInfo();
-    renderTransChar();
     renderWorldBuilding();
     renderPlayerStatus();
     renderCharactersList();
@@ -3573,6 +4160,85 @@ function closeChuanyueMode() {
     
     // 离开板块时隐藏直播按钮和面板
     hideLivestreamButton();
+}
+
+// 确认清除所有数据
+async function confirmClearAllData() {
+    const modeNames = {
+        'chuanyue': '穿越模式',
+        'kuaichuan': '快穿模式',
+        'chuanshu': '穿书模式',
+        'wuxianliu': '无限流模式'
+    };
+    const modeName = modeNames[gameMode] || '当前模式';
+    
+    if (await customDangerConfirm(`确定要清除${modeName}的所有数据吗？\n\n这将删除：\n• 人设信息\n• 聊天记录\n• 世界/副本设定\n• 穿越人设\n• 状态数值\n• 所有相关存档\n\n此操作不可恢复！`, `清除${modeName}数据`)) {
+        clearAllModeData();
+    }
+}
+
+// 清除当前模式所有数据
+function clearAllModeData() {
+    const prefix = `chuanyue_${gameMode}_`;
+    
+    // 获取所有需要清除的localStorage键
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(prefix)) {
+            keysToRemove.push(key);
+        }
+    }
+    
+    // 清除localStorage数据
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // 清除内存中的数据
+    characterProfile = null;
+    chuanyueRulesData = null;
+    chatHistory = [];
+    transCharData = null;
+    transCharGenerated = false;
+    worldBuildingData = null;
+    worldBuildingGenerated = false;
+    playerStatus = null;
+    charactersList = [];
+    chatStatus = null;
+    isChuanyueStarted = false;
+    
+    // 快穿模式特有数据
+    if (gameMode === 'kuaichuan') {
+        currentWorldId = null;
+        kuaichuanWorldsHistory = [];
+        localStorage.removeItem('kuaichuanWorldsHistory');
+        localStorage.removeItem('currentWorldId');
+        localStorage.removeItem('kuaichuanPoints');
+        kuaichuanPoints = 0;
+    }
+    
+    // 重置UI
+    document.getElementById('chatMessages').innerHTML = '';
+    document.getElementById('startChuanyueBtn').style.display = 'flex';
+    document.getElementById('chatInputArea').classList.add('hidden');
+    
+    // 重新渲染所有组件
+    renderProfile();
+    renderWorldInfo();
+    renderTransChar();
+    renderWorldBuilding();
+    renderPlayerStatus();
+    renderCharactersList();
+    updateStatusBar();
+    
+    // 隐藏直播按钮
+    hideLivestreamButton();
+    
+    // 重置积分显示
+    if (gameMode === 'kuaichuan') {
+        updatePointsDisplay();
+    }
+    
+    showToast('所有数据已清除');
 }
 
 // ==================== TRANSMIGRATED CHARACTER ====================
@@ -3692,30 +4358,50 @@ function renderTransChar() {
     const card = document.getElementById('transCharCard');
     const body = document.getElementById('transCharBody');
     const refreshBtn = document.getElementById('refreshTransCharBtn');
+    const titleEl = document.getElementById('transCharTitle');
+    
+    // 快穿模式下更新标题
+    if (titleEl) {
+        titleEl.textContent = gameMode === 'kuaichuan' ? '本世界身份' : '穿越人设';
+    }
+    
+    // 快穿模式必须进入世界后才能生成
+    const canGenerate = gameMode === 'kuaichuan' ? (isChuanyueStarted && worldBuildingData?.selectedWorld) : true;
     
     // 更新刷新按钮状态
     if (refreshBtn) {
         if (transCharGenerated) {
             refreshBtn.disabled = true;
             refreshBtn.title = '已生成（每个世界只能生成一次）';
+        } else if (!canGenerate && gameMode === 'kuaichuan') {
+            refreshBtn.disabled = true;
+            refreshBtn.title = '请先进入世界';
         } else {
             refreshBtn.disabled = false;
-            refreshBtn.title = '生成穿越人设';
+            refreshBtn.title = gameMode === 'kuaichuan' ? '生成本世界身份' : '生成穿越人设';
         }
     }
     
     if (!transCharData || !transCharData.name) {
         // 显示空状态
-        const modeLabel = {
-            'chuanyue': '穿越',
-            'kuaichuan': '本世界',
-            'chuanshu': '穿书',
-            'wuxianliu': '副本'
-        };
-        body.innerHTML = `<div class="trans-char-empty">
-            <p>点击刷新按钮生成${modeLabel[gameMode] || '穿越'}人设</p>
-            <small>注意：每个世界只能生成一次</small>
-        </div>`;
+        if (gameMode === 'kuaichuan') {
+            if (!isChuanyueStarted || !worldBuildingData?.selectedWorld) {
+                body.innerHTML = `<div class="trans-char-empty">
+                    <p>进入世界后可生成本世界身份</p>
+                    <small>先选择世界并开始游戏</small>
+                </div>`;
+            } else {
+                body.innerHTML = `<div class="trans-char-empty">
+                    <p>点击刷新按钮生成本世界身份</p>
+                    <small>注意：每个世界只能生成一次</small>
+                </div>`;
+            }
+        } else {
+            body.innerHTML = `<div class="trans-char-empty">
+                <p>点击刷新按钮生成穿越人设</p>
+                <small>注意：每个世界只能生成一次</small>
+            </div>`;
+        }
         return;
     }
     
@@ -3787,9 +4473,17 @@ function resetTransChar() {
 
 async function generateTransChar() {
     if (transCharGenerated) {
-        const msg = gameMode === 'kuaichuan' ? '本世界人设只能生成一次，进入新世界后可重新生成' : '人设只能生成一次，重新开始后可重新生成';
+        const msg = gameMode === 'kuaichuan' ? '本世界身份只能生成一次，进入新世界后可重新生成' : '人设只能生成一次，重新开始后可重新生成';
         showToast(msg);
         return;
+    }
+    
+    // 快穿模式必须进入世界后才能生成
+    if (gameMode === 'kuaichuan') {
+        if (!isChuanyueStarted || !worldBuildingData?.selectedWorld) {
+            showToast('请先进入世界');
+            return;
+        }
     }
 
     if (!apiSettings.baseUrl || !apiSettings.apiKey || !apiSettings.model) {
@@ -3822,12 +4516,22 @@ async function generateTransChar() {
             if (characterProfile.personality) contextInfo += `- 性格：${characterProfile.personality}\n`;
         }
         
-        if (chuanyueRulesData?.settings) {
-            contextInfo += `\n世界背景：${chuanyueRulesData.settings}\n`;
+        // 快穿模式使用选中的世界背景
+        if (gameMode === 'kuaichuan' && worldBuildingData?.selectedWorld) {
+            contextInfo += `\n当前世界：${worldBuildingData.selectedWorld}\n`;
+            if (worldBuildingData.currentTask) {
+                contextInfo += `当前任务：${worldBuildingData.currentTask}\n`;
+            }
+        } else {
+            if (chuanyueRulesData?.settings) {
+                contextInfo += `\n世界背景：${chuanyueRulesData.settings}\n`;
+            }
         }
         if (chuanyueRulesData?.rules) {
             contextInfo += `\n规则：${chuanyueRulesData.rules}\n`;
         }
+        
+        const identityType = gameMode === 'kuaichuan' ? '本世界身份' : '穿越后身份';
 
         const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
             method: 'POST',
@@ -3839,16 +4543,18 @@ async function generateTransChar() {
                 model: apiSettings.model,
                 messages: [{
                     role: 'system',
-                    content: `你是一个创意写作助手，擅长为${modeLabel[gameMode] || '穿越'}小说设计角色。`
+                    content: gameMode === 'kuaichuan' 
+                        ? `你是一个创意写作助手，擅长为快穿小说设计角色在不同世界的身份。`
+                        : `你是一个创意写作助手，擅长为${modeLabel[gameMode] || '穿越'}小说设计角色。`
                 }, {
                     role: 'user',
-                    content: `请为用户生成一个${modeLabel[gameMode] || '穿越'}后的人物设定。
+                    content: `请为用户生成一个${identityType}设定。
 
 ${contextInfo}
 
 请按以下JSON格式返回（直接返回JSON，不要其他内容）：
 {
-    "name": "穿越后的身份名称",
+    "name": "${gameMode === 'kuaichuan' ? '本世界的身份名称' : '穿越后的身份名称'}",
     "background": "角色背景故事（100字以内）",
     "situation": "当前处境（50字以内）",
     "ability": "特殊能力或金手指（如果有的话）",
@@ -3856,10 +4562,10 @@ ${contextInfo}
 }
 
 要求：
-1. 根据世界背景和用户信息创造合适的身份
+1. 根据${gameMode === 'kuaichuan' ? '当前世界和任务' : '世界背景和用户信息'}创造合适的身份
 2. 身份要有戏剧性和故事潜力
 3. 处境要有冲突或挑战
-4. 金手指不宜过于强大`
+4. ${gameMode === 'kuaichuan' ? '身份要与世界设定和任务相关' : '金手指不宜过于强大'}`
                 }],
                 temperature: 0.8
             })
@@ -4559,89 +5265,6 @@ function closeStatusModal() {
     document.getElementById('statusModal').classList.remove('active');
 }
 
-// AI刷新状态
-async function refreshStatusByAI() {
-    if (!apiSettings.baseUrl || !apiSettings.apiKey || !apiSettings.model) {
-        showToast('请先配置API');
-        return;
-    }
-    
-    if (chatHistory.length === 0) {
-        showToast('暂无对话内容可供分析');
-        return;
-    }
-    
-    const btn = document.getElementById('statusRefreshBtn');
-    btn.disabled = true;
-    btn.classList.add('refreshing');
-    showToast('AI正在分析当前状态...');
-    
-    try {
-        // 获取最近的对话内容
-        const recentChat = chatHistory.slice(-10).map(m => 
-            `${m.type === 'user' ? '用户' : 'AI'}：${m.content}`
-        ).join('\n');
-        
-        const worldInfo = gameMode === 'kuaichuan' && worldBuildingData?.selectedWorld 
-            ? worldBuildingData.selectedWorld 
-            : (chuanyueRulesData?.settings || '');
-        
-        const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiSettings.apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: apiSettings.model,
-                messages: [
-                    { role: 'system', content: '你是状态分析助手。根据对话内容分析角色当前状态，返回JSON格式。' },
-                    { role: 'user', content: `根据以下对话和世界观，分析并更新角色状态：
-
-【世界设定】
-${worldInfo}
-
-【最近对话】
-${recentChat}
-
-【当前状态数据】
-${JSON.stringify(playerStatusData)}
-
-请分析并返回更新后的状态，JSON格式：
-{
-  "currentStatus": "当前身体/精神/情绪状态描述",
-  "affection": [{"name":"角色名","value":好感度数值0-100}],
-  "friends": ["好友名1","好友名2"],
-  "enemies": ["敌人名1"],
-  "inventory": ["物品1","物品2"]
-}` }
-                ],
-                temperature: 0.7
-            })
-        });
-        
-        if (!response.ok) throw new Error('API请求失败');
-        
-        const data = await response.json();
-        const content = data.choices[0]?.message?.content || '';
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        
-        if (jsonMatch) {
-            const newStatus = JSON.parse(jsonMatch[0]);
-            playerStatusData = { ...playerStatusData, ...newStatus };
-            localStorage.setItem(getStorageKey('playerStatusData'), JSON.stringify(playerStatusData));
-            renderPlayerStatus();
-            showToast('状态已更新');
-        }
-    } catch (error) {
-        console.error('Refresh status error:', error);
-        showToast('刷新失败: ' + error.message);
-    } finally {
-        btn.disabled = false;
-        btn.classList.remove('refreshing');
-    }
-}
-
 // AI刷新重要人物
 async function refreshCharactersByAI() {
     if (!apiSettings.baseUrl || !apiSettings.apiKey || !apiSettings.model) {
@@ -4850,9 +5473,9 @@ function renderPlayerStatus() {
     }
 }
 
-function editStatusSection(section) {
+async function editStatusSection(section) {
     let currentValue = '';
-    let promptText = '';
+    let promptTitle = '';
     let isCustom = section.startsWith('custom_');
     let customKey = isCustom ? section.replace('custom_', '') : null;
     let customCat = isCustom ? customStatusCategories.find(c => c.key === customKey) : null;
@@ -4860,36 +5483,36 @@ function editStatusSection(section) {
     if (isCustom && customCat) {
         currentValue = playerStatusData.custom?.[customKey] || '';
         if (customCat.type === 'progress') {
-            promptText = `输入${customCat.name}（0-100的数值）：`;
+            promptTitle = `编辑${customCat.name}（0-100）`;
         } else {
-            promptText = `输入${customCat.name}：`;
+            promptTitle = `编辑${customCat.name}`;
         }
     } else {
         switch (section) {
             case 'currentStatus':
                 currentValue = playerStatusData.currentStatus || '';
-                promptText = '输入当前状态描述：';
+                promptTitle = '编辑当前状态';
                 break;
             case 'affection':
                 currentValue = playerStatusData.affection.map(a => `${a.name}:${a.value}`).join(', ');
-                promptText = '输入好感度（格式：角色名:数值, 如：林黛玉:50, 薛宝钗:30）：';
+                promptTitle = '编辑好感度';
                 break;
             case 'friends':
                 currentValue = playerStatusData.friends.join(', ');
-                promptText = '输入好友列表（用逗号分隔）：';
+                promptTitle = '编辑好友列表';
                 break;
             case 'enemies':
                 currentValue = playerStatusData.enemies.join(', ');
-                promptText = '输入敌对列表（用逗号分隔）：';
+                promptTitle = '编辑敌对列表';
                 break;
             case 'inventory':
                 currentValue = playerStatusData.inventory.map(i => typeof i === 'object' ? `${i.name}:${i.count}` : i).join(', ');
-                promptText = '输入物品（格式：物品名或物品名:数量，用逗号分隔）：';
+                promptTitle = '编辑物品';
                 break;
         }
     }
 
-    const input = prompt(promptText, currentValue);
+    const input = await customPrompt('', currentValue, promptTitle);
     if (input === null) return;
 
     if (isCustom && customCat) {
@@ -5300,9 +5923,9 @@ function showCharacterDetail(index) {
     body.innerHTML = html || '<div class="status-empty">暂无详细信息</div>';
 }
 
-function restartChuanyue() {
+async function restartChuanyue() {
     const modeName = gameMode === 'kuaichuan' ? '快穿' : '穿越';
-    if (!confirm(`确定要重新开始${modeName}模式吗？\n\n这将清空以下内容：\n• 聊天记录\n• 穿越人设\n• 世界设定\n• 故事总结`)) {
+    if (!await customConfirm(`确定要重新开始${modeName}模式吗？\n\n这将清空以下内容：\n• 聊天记录\n• 穿越人设\n• 世界设定\n• 故事总结`, '重新开始')) {
         return;
     }
 
@@ -5475,6 +6098,55 @@ function saveProfile() {
     renderProfile();
     closeProfileModal();
     showToast('人设已保存');
+}
+
+// 渲染角色身份卡片（穿书/无限流专用）
+function renderRoleIdentity() {
+    const card = document.getElementById('roleIdentityCard');
+    const body = document.getElementById('roleIdentityBody');
+    const title = document.getElementById('roleIdentityTitle');
+    
+    if (!card || !body) return;
+    
+    // 穿书和无限流模式显示角色身份卡片
+    if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
+        card.style.display = 'block';
+    } else {
+        card.style.display = 'none';
+        return;
+    }
+    
+    let roleContent = '';
+    let roleTitle = '角色身份';
+    
+    if (gameMode === 'chuanshu') {
+        roleTitle = '👤 穿书身份';
+        if (chuanyueRulesData?.identity) {
+            roleContent = chuanyueRulesData.identity;
+        }
+    } else if (gameMode === 'wuxianliu') {
+        roleTitle = '👤 我的人设';
+        if (chuanyueRulesData?.wuxianliuRole) {
+            roleContent = chuanyueRulesData.wuxianliuRole;
+        }
+    }
+    
+    if (title) title.textContent = roleTitle;
+    
+    if (roleContent) {
+        body.innerHTML = `
+            <div class="profile-info">
+                <div class="role-identity-content">${escapeHtml(roleContent)}</div>
+            </div>
+        `;
+    } else {
+        body.innerHTML = `
+            <div class="profile-empty">
+                <p>${gameMode === 'chuanshu' ? '未设置穿书身份' : '未设置角色人设'}</p>
+                <small>在开始前的设置中填写</small>
+            </div>
+        `;
+    }
 }
 
 function renderProfile() {
@@ -5656,7 +6328,6 @@ function setupChat() {
         if (e.target.id === 'statusModal') closeStatusModal();
     });
     document.getElementById('statusAiUpdate').addEventListener('click', aiUpdateStatus);
-    document.getElementById('statusRefreshBtn').addEventListener('click', refreshStatusByAI);
 
     // Status edit buttons
     document.querySelectorAll('.status-edit-btn').forEach(btn => {
@@ -5701,7 +6372,7 @@ function setupChat() {
     document.getElementById('saveArchiveBtn')?.addEventListener('click', () => saveArchive());
 }
 
-function editMessage() {
+async function editMessage() {
     hideContextMenu();
     if (selectedMessageIndex < 0 || selectedMessageIndex >= chatHistory.length) return;
     
@@ -5711,7 +6382,7 @@ function editMessage() {
         return;
     }
     
-    const newContent = prompt('编辑消息：', msg.content);
+    const newContent = await customPrompt('', msg.content, '编辑消息');
     if (newContent === null || newContent.trim() === '') return;
     
     // Update content

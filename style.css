@@ -5176,6 +5176,345 @@ input[type="range"] {
     font-weight: 600;
 }
 
+/* 其他功能页面 */
+.others-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.others-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.others-back {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.others-back:hover {
+    background: var(--bg-card);
+    color: var(--gold-primary);
+}
+
+.others-back svg {
+    width: 24px;
+    height: 24px;
+}
+
+.others-header h2 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.others-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.others-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.others-card:hover {
+    background: var(--bg-paper);
+    border-color: var(--gold-primary);
+    transform: translateX(4px);
+}
+
+.others-card-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(201, 169, 89, 0.1);
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.others-card-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.others-card-icon.danger {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.others-card-info {
+    flex: 1;
+}
+
+.others-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.others-card-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.others-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.others-empty p {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.others-empty small {
+    font-size: 0.85rem;
+}
+
+/* 设置页面 */
+.settings-page {
+    max-width: 700px;
+}
+
+.settings-page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settings-page .settings-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.settings-page .others-content {
+    margin-top: 12px;
+}
+
+/* 自定义弹窗 */
+.custom-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.custom-dialog-overlay.active {
+    display: flex;
+}
+
+.custom-dialog {
+    background: var(--bg-card);
+    border: 1px solid var(--gold-primary);
+    border-radius: 16px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(201, 169, 89, 0.1);
+    animation: dialogSlideIn 0.25s ease;
+}
+
+@keyframes dialogSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.custom-dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px 12px;
+}
+
+.custom-dialog-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(201, 169, 89, 0.15);
+    border-radius: 10px;
+    color: var(--gold-primary);
+}
+
+.custom-dialog-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.custom-dialog-icon.warning {
+    background: rgba(241, 196, 15, 0.15);
+    color: #f1c40f;
+}
+
+.custom-dialog-icon.danger {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+}
+
+.custom-dialog-icon.success {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+}
+
+.custom-dialog-header h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.custom-dialog-body {
+    padding: 8px 24px 20px;
+}
+
+.custom-dialog-body p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.custom-dialog-input {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.custom-dialog-input:focus {
+    border-color: var(--gold-primary);
+}
+
+.custom-dialog-actions {
+    display: flex;
+    gap: 10px;
+    padding: 0 24px 20px;
+    justify-content: flex-end;
+}
+
+.custom-dialog-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.custom-dialog-btn.cancel {
+    background: var(--bg-paper);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.custom-dialog-btn.cancel:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.custom-dialog-btn.confirm {
+    background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-secondary) 100%);
+    color: var(--bg-main);
+}
+
+.custom-dialog-btn.confirm:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.custom-dialog-btn.danger {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: #fff;
+}
+
+/* 角色身份卡片 */
+.role-identity-card {
+    border: 1px solid var(--gold-primary);
+    background: linear-gradient(135deg, rgba(201, 169, 89, 0.1) 0%, transparent 100%);
+}
+
+.role-identity-content {
+    color: var(--text-primary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* 侧边栏清除按钮 */
+.sidebar-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar-clear-btn {
+    background: transparent;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-clear-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.sidebar-clear-btn:hover {
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+}
+
 /* 线索刷新按钮 */
 .mindmap-title-row {
     display: flex;
