@@ -955,7 +955,26 @@ function loadSavedSettings() {
     // Load backup API settings
     document.getElementById('backupApiBaseUrl').value = backupApiSettings.baseUrl;
     document.getElementById('backupApiKey').value = backupApiSettings.apiKey;
-    document.getElementById('backupModel').value = backupApiSettings.model;
+    // 设置备用模型选择框的值
+    const backupModelSelect = document.getElementById('backupModelSelect');
+    if (backupModelSelect && backupApiSettings.model) {
+        // 如果模型不在列表中，添加一个选项
+        let hasOption = false;
+        for (let option of backupModelSelect.options) {
+            if (option.value === backupApiSettings.model) {
+                hasOption = true;
+                option.selected = true;
+                break;
+            }
+        }
+        if (!hasOption && backupApiSettings.model) {
+            const option = document.createElement('option');
+            option.value = backupApiSettings.model;
+            option.textContent = backupApiSettings.model;
+            option.selected = true;
+            backupModelSelect.appendChild(option);
+        }
+    }
     
     // Load saved theme
     loadSavedTheme();
@@ -1049,9 +1068,21 @@ function setupSettingsModal() {
 
     // Fetch models
     fetchModelsBtn.addEventListener('click', fetchModels);
+    
+    // Fetch backup models
+    const fetchBackupModelsBtn = document.getElementById('fetchBackupModels');
+    if (fetchBackupModelsBtn) {
+        fetchBackupModelsBtn.addEventListener('click', fetchBackupModels);
+    }
 
     // Test connection
     testConnectionBtn.addEventListener('click', testConnection);
+    
+    // Test backup connection
+    const testBackupConnectionBtn = document.getElementById('testBackupConnection');
+    if (testBackupConnectionBtn) {
+        testBackupConnectionBtn.addEventListener('click', testBackupConnection);
+    }
 
     // Save settings
     saveSettingsBtn.addEventListener('click', saveSettings);
@@ -1146,6 +1177,86 @@ async function fetchModels() {
     }
 }
 
+// Fetch backup models from API
+async function fetchBackupModels() {
+    const baseUrl = document.getElementById('backupApiBaseUrl').value.trim();
+    const apiKey = document.getElementById('backupApiKey').value.trim();
+    const fetchBtn = document.getElementById('fetchBackupModels');
+    const fetchStatus = document.getElementById('backupFetchStatus');
+    const modelSelect = document.getElementById('backupModelSelect');
+
+    if (!baseUrl) {
+        showToast('请输入备用API地址');
+        return;
+    }
+    if (!apiKey) {
+        showToast('请输入备用API密钥');
+        return;
+    }
+
+    // Set loading state
+    fetchBtn.classList.add('loading');
+    fetchStatus.textContent = '正在拉取备用API模型列表...';
+    fetchStatus.className = 'fetch-status loading';
+
+    try {
+        const url = baseUrl.replace(/\/$/, '') + '/models';
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        // Parse models - handle different API response formats
+        let models = [];
+        if (data.data && Array.isArray(data.data)) {
+            // OpenAI format
+            models = data.data.map(m => m.id || m.name).filter(Boolean);
+        } else if (Array.isArray(data)) {
+            models = data.map(m => m.id || m.name || m).filter(Boolean);
+        } else if (data.models && Array.isArray(data.models)) {
+            models = data.models.map(m => m.id || m.name || m).filter(Boolean);
+        }
+
+        if (models.length === 0) {
+            throw new Error('未找到可用模型');
+        }
+
+        // Sort models
+        models.sort();
+
+        // Populate select - keep empty option for "use main"
+        modelSelect.innerHTML = '<option value="">留空则使用主模型</option>';
+        models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            if (model === backupApiSettings.model) {
+                option.selected = true;
+            }
+            modelSelect.appendChild(option);
+        });
+
+        fetchStatus.textContent = `成功获取 ${models.length} 个模型`;
+        fetchStatus.className = 'fetch-status success';
+
+    } catch (error) {
+        console.error('Fetch backup models error:', error);
+        fetchStatus.textContent = `拉取失败: ${error.message}`;
+        fetchStatus.className = 'fetch-status error';
+    } finally {
+        fetchBtn.classList.remove('loading');
+    }
+}
+
 // Test API connection
 async function testConnection() {
     const baseUrl = document.getElementById('apiBaseUrl').value.trim();
@@ -1204,7 +1315,69 @@ async function testConnection() {
     } finally {
         testBtn.disabled = false;
         testBtn.classList.remove('loading');
-        testBtn.querySelector('span').textContent = '检测连接';
+        testBtn.querySelector('span').textContent = '检测主API';
+    }
+}
+
+// Test backup API connection
+async function testBackupConnection() {
+    const baseUrl = document.getElementById('backupApiBaseUrl').value.trim();
+    const apiKey = document.getElementById('backupApiKey').value.trim();
+    const model = document.getElementById('backupModelSelect').value;
+    const testBtn = document.getElementById('testBackupConnection');
+    const connectionStatus = document.getElementById('backupConnectionStatus');
+
+    if (!baseUrl) {
+        showToast('请输入备用API地址');
+        return;
+    }
+    if (!apiKey) {
+        showToast('请输入备用API密钥');
+        return;
+    }
+    if (!model) {
+        showToast('请先选择备用模型');
+        return;
+    }
+
+    // Set loading state
+    testBtn.disabled = true;
+    testBtn.classList.add('loading');
+    testBtn.querySelector('span').textContent = '检测中...';
+
+    try {
+        const url = baseUrl.replace(/\/$/, '') + '/chat/completions';
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: model,
+                messages: [{ role: 'user', content: 'Hi' }],
+                max_tokens: 5
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        connectionStatus.innerHTML = `<strong>备用API连接成功!</strong><br>模型: ${model}<br>响应正常`;
+        connectionStatus.className = 'connection-status success show';
+
+    } catch (error) {
+        console.error('Backup connection test error:', error);
+        connectionStatus.innerHTML = `<strong>备用API连接失败</strong><br>${error.message}`;
+        connectionStatus.className = 'connection-status error show';
+    } finally {
+        testBtn.disabled = false;
+        testBtn.classList.remove('loading');
+        testBtn.querySelector('span').textContent = '检测备用API';
     }
 }
 
@@ -1230,7 +1403,7 @@ function saveSettings() {
     // Save backup API settings
     const backupBaseUrl = document.getElementById('backupApiBaseUrl').value.trim();
     const backupKey = document.getElementById('backupApiKey').value.trim();
-    const backupModel = document.getElementById('backupModel').value.trim();
+    const backupModel = document.getElementById('backupModelSelect').value;
     
     backupApiSettings.baseUrl = backupBaseUrl;
     backupApiSettings.apiKey = backupKey;

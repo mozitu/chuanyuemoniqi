@@ -1239,7 +1239,33 @@
                 
                 <div class="settings-item">
                     <label class="settings-label">备用模型</label>
-                    <input type="text" class="settings-input" id="backupModel" placeholder="留空则使用主模型">
+                    <div class="input-with-btn">
+                        <select class="settings-select" id="backupModelSelect">
+                            <option value="">留空则使用主模型</option>
+                        </select>
+                        <button class="icon-btn" id="fetchBackupModels" title="拉取备用API模型">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M4 12 A8 8 0 1 1 12 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M4 8 L4 12 L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="fetch-status" id="backupFetchStatus"></div>
+                </div>
+                
+                <div class="settings-actions backup-api-actions">
+                    <button class="settings-btn settings-btn-test" id="testBackupConnection">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M5 12 L10 17 L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>检测备用API</span>
+                    </button>
+                </div>
+                <div class="connection-status" id="backupConnectionStatus"></div>
+                
+                <!-- 主操作按钮 -->
+                <div class="settings-divider">
+                    <span>操作</span>
                 </div>
                 
                 <div class="settings-actions">
@@ -1247,7 +1273,7 @@
                         <svg viewBox="0 0 24 24" fill="none">
                             <path d="M5 12 L10 17 L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        <span>检测连接</span>
+                        <span>检测主API</span>
                     </button>
                     <button class="settings-btn settings-btn-save" id="saveSettings">
                         <svg viewBox="0 0 24 24" fill="none">
