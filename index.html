@@ -618,14 +618,14 @@
                                 </div>
                                 <span>状态栏</span>
                             </button>
-                            <button class="bottom-sheet-app" id="btnMap">
+                            <button class="bottom-sheet-app" id="btnTask">
                                 <div class="app-icon app-icon-blue">
                                     <svg viewBox="0 0 24 24" fill="none">
-                                        <path d="M1 6 v16 l7-4 8 4 7-4 V2 l-7 4 -8-4 -7 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                                        <path d="M8 2 v16 M16 6 v16" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M9 11 L12 14 L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M21 12 v7 a2 2 0 0 1-2 2 H5 a2 2 0 0 1-2-2 V5 a2 2 0 0 1 2-2 h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
                                 </div>
-                                <span>地图</span>
+                                <span>任务</span>
                             </button>
                             <button class="bottom-sheet-app" id="btnCharacters">
                                 <div class="app-icon app-icon-pink">
@@ -758,38 +758,29 @@
         </div>
     </div>
 
-    <!-- Map Modal -->
-    <div class="modal-overlay" id="mapModal">
-        <div class="modal-box map-modal">
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal-box task-modal">
             <div class="modal-header">
-                <h3>🗺️ 世界地图</h3>
-                <button class="modal-close" id="mapModalClose">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M18 6 L6 18 M6 6 L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="map-content" id="mapContent">
-                <div class="map-empty">
-                    <p>尚未生成地图</p>
-                    <button class="map-generate-btn" id="mapGenerateBtn">
+                <h3>🎯 任务进度</h3>
+                <div class="modal-header-actions">
+                    <button class="modal-refresh-btn" id="taskRefreshBtn" title="AI刷新任务">
                         <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M12 2 L12 6 M12 18 L12 22 M4.93 4.93 L7.76 7.76 M16.24 16.24 L19.07 19.07 M2 12 L6 12 M18 12 L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M21 12a9 9 0 11-2.63-6.36M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        生成世界地图
+                    </button>
+                    <button class="modal-close" id="taskModalClose">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6 L6 18 M6 6 L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
                     </button>
                 </div>
             </div>
-            <div class="map-location-detail" id="mapLocationDetail" style="display:none;">
-                <div class="map-detail-header">
-                    <button class="map-back-btn" id="mapBackBtn">
-                        <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M19 12 H5 M12 19 l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </button>
-                    <h4 id="mapDetailTitle">地点名称</h4>
+            <div class="task-content" id="taskContent">
+                <div class="task-empty">
+                    <p>暂无任务</p>
+                    <small>开始游戏后任务会自动生成</small>
                 </div>
-                <div class="map-detail-body" id="mapDetailBody"></div>
             </div>
         </div>
     </div>
@@ -944,6 +935,40 @@
                     <input type="hidden" id="kuaichuanType" value="">
                 </div>
                 
+                <!-- 穿书模式专用设定 -->
+                <div id="chuanshuSettingsGroup" style="display: none;">
+                    <div class="form-item">
+                        <label class="form-label">📚 原著内容</label>
+                        <textarea class="form-textarea" id="chuanshuNovel" rows="4" placeholder="简述原著故事背景、主要剧情、人物关系等..."></textarea>
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label">🔄 角色重生设定</label>
+                        <div class="chuanshu-role-select">
+                            <button class="chuanshu-role-btn" data-role="none">
+                                <span class="role-icon">❌</span>
+                                <span class="role-name">无重生</span>
+                            </button>
+                            <button class="chuanshu-role-btn" data-role="protagonist">
+                                <span class="role-icon">👑</span>
+                                <span class="role-name">主角重生</span>
+                            </button>
+                            <button class="chuanshu-role-btn" data-role="supporting">
+                                <span class="role-icon">🎭</span>
+                                <span class="role-name">男二重生</span>
+                            </button>
+                            <button class="chuanshu-role-btn" data-role="villain">
+                                <span class="role-icon">🖤</span>
+                                <span class="role-name">反派重生</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="chuanshuRebirth" value="none">
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label">👤 穿越身份</label>
+                        <textarea class="form-textarea" id="chuanshuIdentity" rows="3" placeholder="你穿越后的身份，如：穿成了原著中的炮灰小妾、穿成了主角的白月光..."></textarea>
+                    </div>
+                </div>
+                
                 <div class="form-item" id="rulesItem">
                     <label class="form-label" id="rulesLabel">穿越规则</label>
                     <textarea class="form-textarea" id="chuanyueRules" rows="4" placeholder="如：不能暴露穿越者身份、需要完成系统任务、可以保留前世记忆..."></textarea>
@@ -951,6 +976,36 @@
                 <div class="form-item" id="worldSettingsItem">
                     <label class="form-label">世界设定</label>
                     <textarea class="form-textarea" id="chuanyueSettings" rows="4" placeholder="如：古代宫廷、现代都市、修仙世界、ABO设定..."></textarea>
+                </div>
+                
+                <!-- 无限流世界类型选择 -->
+                <div class="form-item" id="wuxianliuTypeItem" style="display: none;">
+                    <label class="form-label">🎮 副本类型</label>
+                    <div class="wuxianliu-type-grid">
+                        <button class="wuxianliu-type-btn" data-type="custom">
+                            <div class="type-icon">📝</div>
+                            <div class="type-name">自定义</div>
+                            <div class="type-desc">自由设定副本背景和规则</div>
+                        </button>
+                        <button class="wuxianliu-type-btn" data-type="horror">
+                            <div class="type-icon">👻</div>
+                            <div class="type-name">恐怖求生</div>
+                            <div class="type-desc">氛围恐怖、多人求生、NPC互动</div>
+                        </button>
+                    </div>
+                    <input type="hidden" id="wuxianliuType" value="custom">
+                </div>
+                
+                <!-- 无限流角色扮演设定 -->
+                <div class="form-item" id="wuxianliuRoleItem" style="display: none;">
+                    <label class="form-label">👤 你的角色设定</label>
+                    <textarea class="form-textarea" id="wuxianliuRole" rows="4" placeholder="你需要扮演的角色信息：
+• 姓名、年龄、性别
+• 性格特点（如冷静理智/冲动热血）
+• 职业/身份背景
+• 特殊能力或技能
+• 行为准则（确保不会OOC）"></textarea>
+                    <small class="form-hint">⚠️ 请认真填写，AI会严格按照设定扮演你的角色，不允许OOC</small>
                 </div>
                 
                 <!-- AI Polish Button -->

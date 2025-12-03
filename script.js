@@ -238,10 +238,12 @@ const SYSTEM_PROMPT_CORE = `
 - AI可以描写环境、场景、NPC的观察视角
 - 可以用NPC的视角间接暗示用户的存在（如"看向你"而非"你站在那里"）
 
-【字数限制取消】
-- 无固定字数要求，可长可短
-- 根据情节发展自然调节篇幅
-- 重要场景可详细展开，过渡场景可简洁处理
+【字数控制 - 重要】
+- 日常对话/过渡场景：100-200字，简洁明快
+- 普通剧情推进：200-400字，适度描写
+- 重要场景（战斗、告白、冲突等大场面）：可400-800字，详细展开
+- 严禁水字数，每句话都要有信息量
+- 宁可精炼也不要啰嗦
 
 【人名标记格式 - 必须遵守】
 ★ 所有角色人名每次出现都必须用尖括号标记：〈人名〉
@@ -595,10 +597,16 @@ function restorePageState() {
         const worldInfoTitle = document.querySelector('#worldInfoCard .sidebar-card-title');
         const worldBuildingTitle = document.querySelector('#worldBuildingCard .sidebar-card-title');
         const shopCard = document.getElementById('shopCard');
+        const profileCard = document.getElementById('profileCard');
         
         // 隐藏穿越人设卡片（人设自动合并到我的人设中）
         if (transCharCard) transCharCard.style.display = 'none';
         if (worldBuildingCard) worldBuildingCard.style.display = '';
+        
+        // 穿书模式和无限流模式隐藏人设卡片
+        if (profileCard) {
+            profileCard.style.display = (gameMode === 'chuanshu' || gameMode === 'wuxianliu') ? 'none' : '';
+        }
         
         if (gameMode === 'kuaichuan') {
             if (worldInfoTitle) worldInfoTitle.textContent = '快穿系统';
@@ -670,12 +678,12 @@ const DEFAULT_PRESETS = [
         id: 'preset_word_limit',
         name: '字数与节奏',
         content: `【字数与节奏 - 全局】
-- 字数不设限制，可长可短
-- 根据情节需要自然调节篇幅
-- 重要场景（初遇、告白、亲密等）可详细展开
-- 日常过渡可简洁处理
-- 避免水字数的无意义描写
-- 保持阅读节奏流畅`,
+- 日常场景控制在100-200字，简洁为主
+- 普通剧情200-400字
+- 大场面（战斗、告白、高潮）可400-800字
+- 严禁水字数，拒绝无意义的环境描写和心理铺垫
+- 每段文字都要推动剧情或展现人物
+- 保持节奏紧凑，阅读流畅`,
         enabled: true,
         scope: 'global'
     },
@@ -2230,8 +2238,71 @@ async function selectWorld(worldNumber) {
         renderWorldBuilding();
     }
     
+    // 快穿模式：每个世界单独随机性别
+    await handleKuaichuanGenderRandomization();
+    
     // 生成该世界的开场剧情
     await generateWorldOpening(worldNumber, selectedWorldInfo);
+}
+
+// 快穿模式：每个世界单独随机性别
+async function handleKuaichuanGenderRandomization() {
+    if (chuanyueRulesData?.genderSetting !== 'random') {
+        // 不是概率双性，清除之前的随机结果
+        if (chuanyueRulesData) {
+            chuanyueRulesData.confirmedGender = null;
+            localStorage.setItem(getStorageKey('chuanyueRulesData'), JSON.stringify(chuanyueRulesData));
+        }
+        renderWorldInfo();
+        return;
+    }
+    
+    // 获取原本性别
+    const originalGender = characterProfile?.gender || 'male';
+    const genderMap = { 'male': '男', 'female': '女', 'other': '其他' };
+    const originalGenderText = genderMap[originalGender] || '男';
+    
+    // 30%概率变成双性
+    const isIntersex = Math.random() < 0.3;
+    
+    // 保存确定后的性别
+    const confirmedGender = isIntersex ? 'intersex' : originalGender;
+    chuanyueRulesData.confirmedGender = confirmedGender;
+    localStorage.setItem(getStorageKey('chuanyueRulesData'), JSON.stringify(chuanyueRulesData));
+    
+    // 添加系统消息显示结果
+    const messagesContainer = document.getElementById('messagesContainer');
+    const systemMsg = document.createElement('div');
+    systemMsg.className = 'message system-message gender-result-message';
+    
+    if (isIntersex) {
+        systemMsg.innerHTML = `
+            <div class="gender-result intersex">
+                <div class="gender-result-icon">⚧️</div>
+                <div class="gender-result-content">
+                    <div class="gender-result-title">【本世界性别随机】</div>
+                    <div class="gender-result-text">穿越时空的波动... 你在本世界获得了<strong>双性体质</strong>！</div>
+                    <div class="gender-result-desc">同时拥有男性和女性的身体特征，这将影响你在这个世界的体验。</div>
+                </div>
+            </div>
+        `;
+    } else {
+        systemMsg.innerHTML = `
+            <div class="gender-result normal">
+                <div class="gender-result-icon">${originalGender === 'male' ? '♂️' : originalGender === 'female' ? '♀️' : '⚥'}</div>
+                <div class="gender-result-content">
+                    <div class="gender-result-title">【本世界性别随机】</div>
+                    <div class="gender-result-text">穿越时空的波动... 你在本世界保持<strong>${originalGenderText}性</strong>身份。</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    messagesContainer.appendChild(systemMsg);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // 更新侧边栏显示
+    renderWorldInfo();
 }
 
 // 生成选择的世界开场
@@ -2447,7 +2518,8 @@ function setupChuanyueMode() {
 
     // Start button - open rules modal
     startBtn.addEventListener('click', () => {
-        if (!characterProfile) {
+        // 穿书模式和无限流模式跳过人设创建
+        if (gameMode !== 'chuanshu' && gameMode !== 'wuxianliu' && !characterProfile) {
             showToast('请先创建人设');
             openProfileModal(false);
             return;
@@ -2570,6 +2642,20 @@ async function polishChuanyueSettings() {
     const settings = document.getElementById('chuanyueSettings').value.trim();
     const polishBtn = document.getElementById('aiPolishBtn');
     
+    // 穿书模式特殊处理
+    if (gameMode === 'chuanshu') {
+        const novel = document.getElementById('chuanshuNovel').value.trim();
+        const identity = document.getElementById('chuanshuIdentity').value.trim();
+        
+        if (!novel && !identity && !rules) {
+            showToast('请先填写一些内容');
+            return;
+        }
+        
+        await polishChuanshuSettings();
+        return;
+    }
+    
     if (!rules && !settings) {
         showToast('请先填写一些内容');
         return;
@@ -2644,6 +2730,106 @@ ${settings || '（用户未填写）'}
     }
 }
 
+// 穿书模式AI优化
+async function polishChuanshuSettings() {
+    const novel = document.getElementById('chuanshuNovel').value.trim();
+    const identity = document.getElementById('chuanshuIdentity').value.trim();
+    const rules = document.getElementById('chuanyueRules').value.trim();
+    const rebirth = document.getElementById('chuanshuRebirth').value;
+    const polishBtn = document.getElementById('aiPolishBtn');
+    
+    if (!apiSettings.baseUrl || !apiSettings.apiKey || !apiSettings.model) {
+        showToast('请先在设置中配置API');
+        return;
+    }
+    
+    polishBtn.disabled = true;
+    polishBtn.classList.add('loading');
+    polishBtn.querySelector('span').textContent = '完善中...';
+    
+    const rebirthLabels = {
+        'none': '无重生角色',
+        'protagonist': '主角重生',
+        'supporting': '男二重生',
+        'villain': '反派重生'
+    };
+    
+    try {
+        const prompt = `请帮我完善以下穿书故事的设定。
+
+用户填写的原著内容：
+${novel || '（用户未填写）'}
+
+角色重生设定：${rebirthLabels[rebirth] || '无'}
+
+用户填写的穿越身份：
+${identity || '（用户未填写）'}
+
+用户填写的穿书规则：
+${rules || '（用户未填写）'}
+
+请严格按照以下JSON格式返回（不要包含其他内容）：
+{
+  "novel": "完善后的原著内容（扩展到150-300字，包含故事背景、主要角色关系、核心剧情线）",
+  "identity": "完善后的穿越身份（50-100字，明确身份、与主要角色的关系、初始处境）",
+  "rules": "完善后的穿书规则（3-5条，包含剧情限制、可改变的内容、特殊规则等）"
+}`;
+
+        const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiSettings.apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: apiSettings.model,
+                messages: [
+                    { role: 'system', content: '你是一个专业的穿书小说设定助手。请根据用户填写的内容进行完善和扩展，保留用户的核心想法，使设定更加丰富、有趣且符合穿书文逻辑。只返回JSON格式。' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) throw new Error('API请求失败');
+
+        const data = await response.json();
+        const content = data.choices[0]?.message?.content || '';
+        
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            const result = JSON.parse(jsonMatch[0]);
+            // 确保各字段是字符串
+            if (result.novel) {
+                document.getElementById('chuanshuNovel').value = typeof result.novel === 'string' ? result.novel : JSON.stringify(result.novel);
+            }
+            if (result.identity) {
+                document.getElementById('chuanshuIdentity').value = typeof result.identity === 'string' ? result.identity : JSON.stringify(result.identity);
+            }
+            if (result.rules) {
+                // 如果rules是数组，转换为换行分隔的字符串
+                let rulesText = result.rules;
+                if (Array.isArray(rulesText)) {
+                    rulesText = rulesText.join('\n');
+                } else if (typeof rulesText !== 'string') {
+                    rulesText = JSON.stringify(rulesText);
+                }
+                document.getElementById('chuanyueRules').value = rulesText;
+            }
+            showToast('完善成功！');
+        } else {
+            throw new Error('无法解析AI返回内容');
+        }
+    } catch (error) {
+        console.error('Polish error:', error);
+        showToast('完善失败: ' + error.message);
+    } finally {
+        polishBtn.disabled = false;
+        polishBtn.classList.remove('loading');
+        polishBtn.querySelector('span').textContent = 'AI 完善';
+    }
+}
+
 function openChuanyueRulesModal() {
     const modal = document.getElementById('chuanyueRulesModal');
     const genderSettingBtns = document.querySelectorAll('.gender-setting-btn');
@@ -2656,6 +2842,14 @@ function openChuanyueRulesModal() {
     const kuaichuanTypeBtns = document.querySelectorAll('.kuaichuan-type-btn');
     const aiPolishBtn = document.getElementById('aiPolishBtn');
 
+    // 默认隐藏穿书设定
+    const chuanshuGroup = document.getElementById('chuanshuSettingsGroup');
+    chuanshuGroup.style.display = 'none';
+    
+    // 默认隐藏无限流设定
+    document.getElementById('wuxianliuRoleItem').style.display = 'none';
+    document.getElementById('wuxianliuTypeItem').style.display = 'none';
+    
     // Adjust modal based on game mode
     if (gameMode === 'kuaichuan') {
         rulesModalTitle.textContent = '快穿系统设定';
@@ -2678,11 +2872,35 @@ function openChuanyueRulesModal() {
         rulesTextarea.placeholder = '如：不能透露原著剧情、可以改变人物命运、需要完成剧情任务...';
         kuaichuanTypeItem.style.display = 'none';
         rulesItem.style.display = '';
-        worldSettingsItem.style.display = '';
+        worldSettingsItem.style.display = 'none'; // 隐藏普通世界设定
         aiPolishBtn.style.display = '';
-        // 更新世界设定标签
-        worldSettingsItem.querySelector('.form-label').textContent = '书籍设定';
-        document.getElementById('chuanyueSettings').placeholder = '如：原著小说类型、主要角色、剧情背景...';
+        
+        // 显示穿书专用设定
+        const chuanshuGroup = document.getElementById('chuanshuSettingsGroup');
+        chuanshuGroup.style.display = '';
+        
+        // 设置穿书角色选择按钮事件
+        const chuanshuRoleBtns = document.querySelectorAll('.chuanshu-role-btn');
+        chuanshuRoleBtns.forEach(btn => {
+            btn.onclick = () => {
+                chuanshuRoleBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('chuanshuRebirth').value = btn.dataset.role;
+            };
+        });
+        
+        // 加载已保存的穿书数据
+        if (chuanyueRulesData) {
+            document.getElementById('chuanshuNovel').value = chuanyueRulesData.novel || '';
+            document.getElementById('chuanshuIdentity').value = chuanyueRulesData.identity || '';
+            document.getElementById('chuanshuRebirth').value = chuanyueRulesData.rebirth || 'none';
+            chuanshuRoleBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.role === (chuanyueRulesData.rebirth || 'none'));
+            });
+        } else {
+            // 默认选中"无重生"
+            chuanshuRoleBtns[0]?.classList.add('active');
+        }
     } else if (gameMode === 'wuxianliu') {
         rulesModalTitle.textContent = '无限流设定';
         rulesLabel.textContent = '副本规则';
@@ -2692,8 +2910,52 @@ function openChuanyueRulesModal() {
         worldSettingsItem.style.display = '';
         aiPolishBtn.style.display = '';
         // 更新世界设定标签
-        worldSettingsItem.querySelector('.form-label').textContent = '副本设定';
-        document.getElementById('chuanyueSettings').placeholder = '如：副本类型、难度等级、特殊规则...';
+        worldSettingsItem.querySelector('.form-label').textContent = '首个副本背景';
+        document.getElementById('chuanyueSettings').placeholder = '请介绍第一个副本的背景设定...\n如：废弃医院、古宅、孤岛、游轮等场景';
+        // 显示类型选择
+        document.getElementById('wuxianliuTypeItem').style.display = '';
+        // 显示角色扮演设定
+        document.getElementById('wuxianliuRoleItem').style.display = '';
+        // 加载已保存的角色设定
+        document.getElementById('wuxianliuRole').value = chuanyueRulesData?.wuxianliuRole || '';
+        
+        // 设置无限流类型按钮事件
+        const wuxianliuTypeBtns = document.querySelectorAll('.wuxianliu-type-btn');
+        const updateWuxianliuTypeUI = (type) => {
+            if (type === 'horror') {
+                // 恐怖求生模式：隐藏副本设定和规则
+                worldSettingsItem.style.display = 'none';
+                rulesItem.style.display = 'none';
+            } else {
+                // 自定义模式：显示副本设定和规则
+                worldSettingsItem.style.display = '';
+                rulesItem.style.display = '';
+                document.getElementById('chuanyueSettings').placeholder = '请介绍第一个副本的背景设定...';
+                rulesTextarea.placeholder = '如：完成副本任务、积累积分、获取技能...';
+            }
+        };
+        
+        wuxianliuTypeBtns.forEach(btn => {
+            btn.onclick = () => {
+                wuxianliuTypeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('wuxianliuType').value = btn.dataset.type;
+                updateWuxianliuTypeUI(btn.dataset.type);
+            };
+        });
+        
+        // 加载已保存的类型
+        const savedType = chuanyueRulesData?.wuxianliuType || 'custom';
+        document.getElementById('wuxianliuType').value = savedType;
+        wuxianliuTypeBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.type === savedType);
+        });
+        // 默认选中自定义
+        if (!chuanyueRulesData?.wuxianliuType) {
+            wuxianliuTypeBtns[0]?.classList.add('active');
+        }
+        // 根据当前类型更新UI
+        updateWuxianliuTypeUI(savedType);
     } else {
         rulesModalTitle.textContent = '穿越设定';
         rulesLabel.textContent = '穿越规则';
@@ -2755,6 +3017,41 @@ function confirmChuanyue() {
         showToast('请选择任务类型');
         return;
     }
+    
+    // 穿书模式专用数据
+    let chuanshuData = {};
+    if (gameMode === 'chuanshu') {
+        const novel = document.getElementById('chuanshuNovel').value.trim();
+        const identity = document.getElementById('chuanshuIdentity').value.trim();
+        const rebirth = document.getElementById('chuanshuRebirth').value;
+        
+        if (!novel) {
+            showToast('请填写原著内容');
+            return;
+        }
+        
+        chuanshuData = { novel, identity, rebirth };
+    }
+    
+    // 无限流模式专用数据
+    let wuxianliuData = {};
+    if (gameMode === 'wuxianliu') {
+        const wuxianliuRole = document.getElementById('wuxianliuRole').value.trim();
+        const wuxianliuType = document.getElementById('wuxianliuType').value || 'custom';
+        
+        if (!wuxianliuRole) {
+            showToast('请填写你的角色设定');
+            return;
+        }
+        
+        // 自定义模式需要填写副本背景，恐怖求生模式不需要
+        if (wuxianliuType === 'custom' && !settings) {
+            showToast('请填写副本背景');
+            return;
+        }
+        
+        wuxianliuData = { wuxianliuRole, wuxianliuType };
+    }
 
     // Save rules data
     chuanyueRulesData = {
@@ -2763,6 +3060,8 @@ function confirmChuanyue() {
         genderSetting,
         livestreamEnabled,
         kuaichuanType,
+        ...chuanshuData,
+        ...wuxianliuData,
         updatedAt: Date.now()
     };
     localStorage.setItem(getStorageKey('chuanyueRulesData'), JSON.stringify(chuanyueRulesData));
@@ -2817,8 +3116,117 @@ function renderWorldInfo() {
         `;
     }
     
-    // Rules section
-    if (chuanyueRulesData.rules && !isKuaichuan) {
+    // 穿书模式专用显示
+    if (gameMode === 'chuanshu') {
+        if (chuanyueRulesData.novel) {
+            html += `
+                <div class="world-info-section">
+                    <div class="world-info-section-title">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="2"/></svg>
+                        📚 原著内容
+                    </div>
+                    <div class="world-info-section-content">${escapeHtml(chuanyueRulesData.novel)}</div>
+                </div>
+            `;
+        }
+        
+        if (chuanyueRulesData.rebirth && chuanyueRulesData.rebirth !== 'none') {
+            const rebirthLabels = {
+                'protagonist': '👑 主角重生',
+                'supporting': '🎭 男二重生',
+                'villain': '🖤 反派重生'
+            };
+            html += `
+                <div class="world-info-section">
+                    <div class="world-info-section-title">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9" stroke="currentColor" stroke-width="2"/></svg>
+                        🔄 重生设定
+                    </div>
+                    <div class="world-info-gender-tag">${rebirthLabels[chuanyueRulesData.rebirth]}</div>
+                </div>
+            `;
+        }
+        
+        if (chuanyueRulesData.identity) {
+            html += `
+                <div class="world-info-section">
+                    <div class="world-info-section-title">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>
+                        👤 穿书身份
+                    </div>
+                    <div class="world-info-section-content">${escapeHtml(chuanyueRulesData.identity)}</div>
+                </div>
+            `;
+        }
+    }
+    
+    // 无限流模式专用显示
+    if (gameMode === 'wuxianliu') {
+        // 副本类型
+        if (chuanyueRulesData.wuxianliuType) {
+            const typeInfo = {
+                'custom': { name: '自定义', icon: '📝' },
+                'horror': { name: '恐怖求生', icon: '👻' }
+            };
+            const type = typeInfo[chuanyueRulesData.wuxianliuType] || typeInfo['custom'];
+            html += `
+                <div class="world-info-section">
+                    <div class="world-info-section-title">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z" stroke="currentColor" stroke-width="2"/></svg>
+                        副本类型
+                    </div>
+                    <div class="world-info-gender-tag">
+                        ${type.icon} ${type.name}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 用户角色设定
+        if (chuanyueRulesData.wuxianliuRole) {
+            html += `
+                <div class="world-info-section wuxianliu-role-section">
+                    <div class="world-info-section-title">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>
+                        👤 你的角色
+                    </div>
+                    <div class="world-info-section-content wuxianliu-role-content">${escapeHtml(chuanyueRulesData.wuxianliuRole)}</div>
+                </div>
+            `;
+        }
+        
+        // 副本设定/世界观
+        // 自定义模式才显示副本设定和规则
+        if (chuanyueRulesData.wuxianliuType !== 'horror') {
+            if (chuanyueRulesData.settings) {
+                html += `
+                    <div class="world-info-section">
+                        <div class="world-info-section-title">
+                            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M2 12 H22" stroke="currentColor" stroke-width="2"/></svg>
+                            🎮 副本世界观
+                        </div>
+                        <div class="world-info-section-content">${escapeHtml(chuanyueRulesData.settings)}</div>
+                    </div>
+                `;
+            }
+            
+            // 副本规则
+            if (chuanyueRulesData.rules) {
+                html += `
+                    <div class="world-info-section">
+                        <div class="world-info-section-title">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5 H7 a2 2 0 0 0-2 2 v12 a2 2 0 0 0 2 2 h10 a2 2 0 0 0 2-2 V7 a2 2 0 0 0-2-2 h-2 M9 5 a2 2 0 0 1 2-2 h2 a2 2 0 0 1 2 2 v0 a2 2 0 0 1-2 2 h-2 a2 2 0 0 1-2-2 z" stroke="currentColor" stroke-width="2"/></svg>
+                            📜 副本规则
+                        </div>
+                        <div class="world-info-section-content">${escapeHtml(chuanyueRulesData.rules)}</div>
+                    </div>
+                `;
+            }
+        }
+    }
+    
+    // Rules section (非快穿、非无限流模式)
+    if (chuanyueRulesData.rules && !isKuaichuan && gameMode !== 'wuxianliu') {
         html += `
             <div class="world-info-section">
                 <div class="world-info-section-title">
@@ -2830,8 +3238,8 @@ function renderWorldInfo() {
         `;
     }
     
-    // Settings section (only for chuanyue mode)
-    if (chuanyueRulesData.settings && !isKuaichuan) {
+    // Settings section (非快穿、非无限流模式)
+    if (chuanyueRulesData.settings && !isKuaichuan && gameMode !== 'wuxianliu') {
         html += `
             <div class="world-info-section">
                 <div class="world-info-section-title">
@@ -2843,8 +3251,26 @@ function renderWorldInfo() {
         `;
     }
     
-    // Gender setting
-    if (chuanyueRulesData.genderSetting) {
+    // Gender setting - 显示确定后的性别
+    if (chuanyueRulesData.confirmedGender) {
+        // 已确定性别
+        const isIntersex = chuanyueRulesData.confirmedGender === 'intersex';
+        const genderTextMap = { 'male': '男性', 'female': '女性', 'other': '其他', 'intersex': '双性体质' };
+        const confirmedText = genderTextMap[chuanyueRulesData.confirmedGender] || '未知';
+        
+        html += `
+            <div class="world-info-section ${isIntersex ? 'gender-intersex-section' : ''}">
+                <div class="world-info-section-title">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
+                    ${isIntersex ? '⚧️' : ''} 穿越后性别
+                </div>
+                <div class="world-info-gender-tag ${isIntersex ? 'intersex-tag' : ''}">
+                    ${isIntersex ? '⚧️ 双性体质（已确定）' : confirmedText + '（已确定）'}
+                </div>
+            </div>
+        `;
+    } else if (chuanyueRulesData.genderSetting) {
+        // 未确定，显示设定选项
         const genderInfo = genderSettingMap[chuanyueRulesData.genderSetting] || { text: chuanyueRulesData.genderSetting, icon: '' };
         html += `
             <div class="world-info-section">
@@ -2884,10 +3310,16 @@ function openChuanyueMode() {
     const worldInfoTitle = document.querySelector('#worldInfoCard .sidebar-card-title');
     const worldBuildingTitle = document.querySelector('#worldBuildingCard .sidebar-card-title');
     const shopCard = document.getElementById('shopCard');
+    const profileCard = document.getElementById('profileCard');
     
     // 隐藏穿越人设卡片（人设自动合并到我的人设中）
     if (transCharCard) transCharCard.style.display = 'none';
     if (worldBuildingCard) worldBuildingCard.style.display = '';
+    
+    // 穿书模式和无限流模式隐藏人设卡片
+    if (profileCard) {
+        profileCard.style.display = (gameMode === 'chuanshu' || gameMode === 'wuxianliu') ? 'none' : '';
+    }
     
     if (gameMode === 'kuaichuan') {
         if (worldInfoTitle) worldInfoTitle.textContent = '快穿系统';
@@ -2923,6 +3355,12 @@ function openChuanyueMode() {
 
 // 刷新模式UI（切换模式后调用）
 function refreshModeUI() {
+    // 穿书模式隐藏人设卡片
+    const profileCard = document.getElementById('profileCard');
+    if (profileCard) {
+        profileCard.style.display = gameMode === 'chuanshu' ? 'none' : '';
+    }
+    
     // 渲染侧边栏内容
     renderProfile();
     renderWorldInfo();
@@ -3394,9 +3832,15 @@ async function generateWorldBuilding() {
         return;
     }
 
-    // 快穿模式不需要检查世界背景
-    if (gameMode !== 'kuaichuan' && (!chuanyueRulesData || !chuanyueRulesData.settings)) {
+    // 快穿模式和穿书模式不需要检查settings
+    if (gameMode !== 'kuaichuan' && gameMode !== 'chuanshu' && (!chuanyueRulesData || !chuanyueRulesData.settings)) {
         showToast('请先设置世界背景');
+        return;
+    }
+    
+    // 穿书模式检查原著内容
+    if (gameMode === 'chuanshu' && (!chuanyueRulesData || !chuanyueRulesData.novel)) {
+        showToast('请先填写原著内容');
         return;
     }
 
@@ -3407,10 +3851,16 @@ async function generateWorldBuilding() {
     showToast('正在生成世界设定...');
 
     try {
-        // 快穿模式：根据选择的世界生成设定
+        // 根据模式获取世界背景
         let worldBackground = '';
         if (gameMode === 'kuaichuan' && worldBuildingData?.selectedWorld) {
             worldBackground = worldBuildingData.selectedWorld;
+        } else if (gameMode === 'chuanshu') {
+            // 穿书模式：使用原著内容作为世界背景
+            worldBackground = chuanyueRulesData?.novel || '';
+            if (chuanyueRulesData?.identity) {
+                worldBackground += `\n\n穿书者身份：${chuanyueRulesData.identity}`;
+            }
         } else {
             worldBackground = chuanyueRulesData?.settings || '';
         }
@@ -4250,107 +4700,174 @@ ${customFieldsDesc}
     }
 }
 
-// ==================== WORLD MAP ====================
+// ==================== TASK SYSTEM ====================
 
-function openMapModal() {
-    document.getElementById('mapModal').classList.add('active');
-    renderWorldMap();
+function openTaskModal() {
+    document.getElementById('taskModal').classList.add('active');
+    renderTaskProgress();
 }
 
-function closeMapModal() {
-    document.getElementById('mapModal').classList.remove('active');
+function closeTaskModal() {
+    document.getElementById('taskModal').classList.remove('active');
 }
 
-function showMapList() {
-    document.getElementById('mapContent').style.display = 'block';
-    document.getElementById('mapLocationDetail').style.display = 'none';
-}
-
-function renderWorldMap() {
-    const content = document.getElementById('mapContent');
-    const detail = document.getElementById('mapLocationDetail');
+function renderTaskProgress() {
+    const content = document.getElementById('taskContent');
     
-    content.style.display = 'block';
-    detail.style.display = 'none';
+    // 获取任务信息
+    const currentTask = worldBuildingData?.currentTask || '';
+    const taskProgress = playerStatusData?.taskProgress || null;
     
-    if (!worldMapData || !worldMapData.locations || worldMapData.locations.length === 0) {
-        content.innerHTML = `<div class="map-empty">
-            <p>尚未生成地图</p>
-            <button class="map-generate-btn" id="mapGenerateBtn" onclick="generateWorldMap()">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2 L12 6 M12 18 L12 22 M4.93 4.93 L7.76 7.76 M16.24 16.24 L19.07 19.07 M2 12 L6 12 M18 12 L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                生成世界地图
-            </button>
+    if (!currentTask && !taskProgress) {
+        content.innerHTML = `<div class="task-empty">
+            <p>暂无任务</p>
+            <small>开始游戏后任务会自动生成</small>
         </div>`;
         return;
     }
     
-    let html = '<div class="map-grid">';
-    worldMapData.locations.forEach((loc, index) => {
-        html += `<div class="map-location" onclick="showLocationDetail(${index})">
-            <div class="map-location-icon">${loc.icon || '📍'}</div>
-            <div class="map-location-name">${escapeHtml(loc.name)}</div>
-            <div class="map-location-type">${escapeHtml(loc.type || '')}</div>
-            <div class="map-location-brief">${escapeHtml(loc.brief || '')}</div>
+    let html = '<div class="task-list">';
+    
+    // 显示主线任务
+    if (currentTask) {
+        const mainProgress = taskProgress?.main || 0;
+        const mainStatus = taskProgress?.mainStatus || '进行中';
+        const isCompleted = mainStatus === '已完成';
+        
+        html += `<div class="task-card task-main ${isCompleted ? 'completed' : ''}">
+            <div class="task-header">
+                <div class="task-type-badge">🎯 主线任务</div>
+                <div class="task-status ${isCompleted ? 'status-completed' : 'status-ongoing'}">${escapeHtml(mainStatus)}</div>
+            </div>
+            <div class="task-title">${escapeHtml(currentTask)}</div>
+            <div class="task-progress-bar">
+                <div class="task-progress-fill" style="width: ${mainProgress}%"></div>
+            </div>
+            <div class="task-progress-text">进度：${mainProgress}%</div>
         </div>`;
-    });
+    }
+    
+    // 显示支线任务
+    if (taskProgress?.side && taskProgress.side.length > 0) {
+        html += '<div class="task-section-title">📝 支线任务</div>';
+        taskProgress.side.forEach((task, index) => {
+            const isCompleted = task.status === '已完成';
+            html += `<div class="task-card task-side ${isCompleted ? 'completed' : ''}">
+                <div class="task-header">
+                    <div class="task-name">${escapeHtml(task.name)}</div>
+                    <div class="task-status ${isCompleted ? 'status-completed' : 'status-ongoing'}">${escapeHtml(task.status || '进行中')}</div>
+                </div>
+                ${task.description ? `<div class="task-desc">${escapeHtml(task.description)}</div>` : ''}
+                <div class="task-progress-bar">
+                    <div class="task-progress-fill" style="width: ${task.progress || 0}%"></div>
+                </div>
+                <div class="task-progress-text">进度：${task.progress || 0}%</div>
+            </div>`;
+        });
+    }
+    
+    // 显示已完成任务记录
+    if (taskProgress?.completed && taskProgress.completed.length > 0) {
+        html += '<div class="task-section-title">✅ 已完成</div>';
+        html += '<div class="task-completed-list">';
+        taskProgress.completed.forEach((task, index) => {
+            html += `<div class="task-completed-item">
+                <span class="task-completed-check">✓</span>
+                <span class="task-completed-name">${escapeHtml(task.name)}</span>
+            </div>`;
+        });
+        html += '</div>';
+    }
+    
     html += '</div>';
     content.innerHTML = html;
 }
 
-function showLocationDetail(index) {
-    if (!worldMapData || !worldMapData.locations || !worldMapData.locations[index]) return;
-    
-    const loc = worldMapData.locations[index];
-    const content = document.getElementById('mapContent');
-    const detail = document.getElementById('mapLocationDetail');
-    const title = document.getElementById('mapDetailTitle');
-    const body = document.getElementById('mapDetailBody');
-    
-    content.style.display = 'none';
-    detail.style.display = 'block';
-    
-    title.textContent = `${loc.icon || '📍'} ${loc.name}`;
-    
-    let html = '';
-    
-    if (loc.type) {
-        html += `<div class="map-detail-section">
-            <div class="map-detail-label">地点类型</div>
-            <div class="map-detail-value">${escapeHtml(loc.type)}</div>
-        </div>`;
+async function refreshTaskByAI() {
+    if (!apiSettings.baseUrl || !apiSettings.apiKey || !apiSettings.model) {
+        showToast('请先在设置中配置API');
+        return;
     }
     
-    if (loc.description) {
-        html += `<div class="map-detail-section">
-            <div class="map-detail-label">详细描述</div>
-            <div class="map-detail-value">${escapeHtml(loc.description)}</div>
-        </div>`;
+    if (chatHistory.length < 3) {
+        showToast('对话太少，无法分析任务进度');
+        return;
     }
     
-    if (loc.features) {
-        html += `<div class="map-detail-section">
-            <div class="map-detail-label">特色/特产</div>
-            <div class="map-detail-value">${escapeHtml(loc.features)}</div>
-        </div>`;
-    }
+    const btn = document.getElementById('taskRefreshBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="loading-spinner" style="width:16px;height:16px;"></div>';
     
-    if (loc.inhabitants) {
-        html += `<div class="map-detail-section">
-            <div class="map-detail-label">居民/势力</div>
-            <div class="map-detail-value">${escapeHtml(loc.inhabitants)}</div>
-        </div>`;
+    try {
+        const currentTask = worldBuildingData?.currentTask || '无明确任务';
+        const recentHistory = chatHistory.slice(-20).map(m => `${m.role === 'user' ? '用户' : 'AI'}: ${m.content}`).join('\n');
+        
+        const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiSettings.apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: apiSettings.model,
+                messages: [
+                    { role: 'system', content: '你是一个任务进度分析员。根据对话内容分析任务完成情况。严格返回JSON格式。' },
+                    { role: 'user', content: `根据以下对话分析任务进度：
+
+主线任务：${currentTask}
+
+最近对话：
+${recentHistory}
+
+请分析并返回JSON：
+{
+  "main": 0-100的数字表示主线任务完成百分比,
+  "mainStatus": "进行中/已完成/危险",
+  "side": [
+    {
+      "name": "支线任务名",
+      "description": "任务描述",
+      "progress": 0-100,
+      "status": "进行中/已完成"
     }
-    
-    if (loc.dangers) {
-        html += `<div class="map-detail-section">
-            <div class="map-detail-label">危险程度</div>
-            <div class="map-detail-value">${escapeHtml(loc.dangers)}</div>
-        </div>`;
+  ],
+  "completed": [
+    {"name": "已完成的任务名称"}
+  ]
+}
+
+注意：
+1. 根据对话内容合理估算进度
+2. 支线任务从对话中提取（如收集物品、完成某事等）
+3. 已明确完成的任务放入completed
+4. 只返回JSON` }
+                ],
+                temperature: 0.7
+            })
+        });
+        
+        if (!response.ok) throw new Error('API请求失败');
+        
+        const data = await response.json();
+        const content = data.choices[0]?.message?.content || '';
+        
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            const taskProgress = JSON.parse(jsonMatch[0]);
+            playerStatusData.taskProgress = taskProgress;
+            localStorage.setItem(getStorageKey('playerStatusData'), JSON.stringify(playerStatusData));
+            renderTaskProgress();
+            showToast('任务进度已更新');
+        } else {
+            throw new Error('解析失败');
+        }
+    } catch (error) {
+        console.error('Refresh task error:', error);
+        showToast('刷新失败: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-2.63-6.36M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     }
-    
-    body.innerHTML = html || '<div class="status-empty">暂无详细信息</div>';
 }
 
 // ==================== CHARACTERS ====================
@@ -4446,92 +4963,6 @@ function showCharacterDetail(index) {
     }
     
     body.innerHTML = html || '<div class="status-empty">暂无详细信息</div>';
-}
-
-async function generateWorldMap() {
-    if (!apiSettings.baseUrl || !apiSettings.apiKey || !apiSettings.model) {
-        showToast('请先在设置中配置API');
-        return;
-    }
-
-    if (!chuanyueRulesData || !chuanyueRulesData.settings) {
-        showToast('请先设置世界背景');
-        return;
-    }
-
-    const content = document.getElementById('mapContent');
-    content.innerHTML = `<div class="map-empty">
-        <div class="loading-spinner" style="margin: 0 auto 16px;"></div>
-        <p>正在生成世界地图...</p>
-    </div>`;
-
-    try {
-        const worldInfo = chuanyueRulesData.settings;
-        const worldBuilding = worldBuildingData ? JSON.stringify(worldBuildingData) : '';
-
-        const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiSettings.apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: apiSettings.model,
-                messages: [
-                    { role: 'system', content: `你是一个世界地图设计师。根据世界设定生成主要地点信息。严格按JSON格式返回。` },
-                    { role: 'user', content: `根据以下世界设定，生成6-8个主要地点：
-
-世界背景：${worldInfo}
-详细设定：${worldBuilding}
-
-请生成适合该世界的主要地点，包括：
-- 主城/都城
-- 各大势力所在地
-- 特殊场所（如修仙世界的灵脉/秘境，末世的安全区/废墟等）
-- 危险区域
-
-返回JSON格式：
-{
-  "locations": [
-    {
-      "name": "地点名称",
-      "icon": "适合的emoji图标",
-      "type": "地点类型（如：都城/门派/秘境/废墟等）",
-      "brief": "一句话简介",
-      "description": "详细描述（2-3句话）",
-      "features": "特色、特产或资源",
-      "inhabitants": "主要居民或势力",
-      "dangers": "危险程度和注意事项"
-    }
-  ]
-}
-
-只返回JSON，不要其他内容。` }
-                ],
-                temperature: 0.8
-            })
-        });
-
-        if (!response.ok) throw new Error('API请求失败');
-
-        const data = await response.json();
-        const content = data.choices[0]?.message?.content || '';
-
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            worldMapData = JSON.parse(jsonMatch[0]);
-            localStorage.setItem(getStorageKey('worldMapData'), JSON.stringify(worldMapData));
-            renderWorldMap();
-            showToast('地图生成完成');
-        } else {
-            throw new Error('解析失败');
-        }
-
-    } catch (error) {
-        console.error('Generate world map error:', error);
-        showToast('生成失败: ' + error.message);
-        renderWorldMap();
-    }
 }
 
 function restartChuanyue() {
@@ -4897,19 +5328,18 @@ function setupChat() {
         btn.addEventListener('click', () => editStatusSection(btn.dataset.section));
     });
 
-    // Map button
-    document.getElementById('btnMap').addEventListener('click', () => {
+    // Task button
+    document.getElementById('btnTask').addEventListener('click', () => {
         closeBottomSheet();
-        openMapModal();
+        openTaskModal();
     });
 
-    // Map modal
-    document.getElementById('mapModalClose').addEventListener('click', closeMapModal);
-    document.getElementById('mapModal').addEventListener('click', (e) => {
-        if (e.target.id === 'mapModal') closeMapModal();
+    // Task modal
+    document.getElementById('taskModalClose').addEventListener('click', closeTaskModal);
+    document.getElementById('taskModal').addEventListener('click', (e) => {
+        if (e.target.id === 'taskModal') closeTaskModal();
     });
-    document.getElementById('mapGenerateBtn').addEventListener('click', generateWorldMap);
-    document.getElementById('mapBackBtn').addEventListener('click', showMapList);
+    document.getElementById('taskRefreshBtn').addEventListener('click', refreshTaskByAI);
 
     // Characters button
     document.getElementById('btnCharacters').addEventListener('click', () => {
@@ -5927,11 +6357,87 @@ async function startChuanyueSession() {
         updateLivestreamPoints();
     }
     
+    // 处理概率双性：在生成内容前先确定性别
+    await handleGenderRandomization();
+    
     // 自动生成穿越人设（静默）
     await autoGenerateTransChar();
     
     // Generate opening scene
     await generateOpeningScene();
+}
+
+// 处理概率双性随机
+async function handleGenderRandomization() {
+    // 快穿模式每个世界单独随机，不在这里处理
+    if (gameMode === 'kuaichuan') {
+        return;
+    }
+    
+    if (chuanyueRulesData?.genderSetting !== 'random') {
+        // 不是概率双性，清除之前的随机结果
+        if (chuanyueRulesData) {
+            chuanyueRulesData.confirmedGender = null;
+            localStorage.setItem(getStorageKey('chuanyueRulesData'), JSON.stringify(chuanyueRulesData));
+        }
+        return;
+    }
+    
+    // 获取原本性别（无限流模式可能没有characterProfile，从wuxianliuRole中提取或默认男性）
+    let originalGender = 'male';
+    if (characterProfile?.gender) {
+        originalGender = characterProfile.gender;
+    } else if (gameMode === 'wuxianliu' && chuanyueRulesData?.wuxianliuRole) {
+        // 尝试从角色设定中提取性别
+        const roleText = chuanyueRulesData.wuxianliuRole;
+        if (roleText.includes('女') || roleText.includes('♀')) {
+            originalGender = 'female';
+        }
+    }
+    const genderMap = { 'male': '男', 'female': '女', 'other': '其他' };
+    const originalGenderText = genderMap[originalGender] || '男';
+    
+    // 30%概率变成双性
+    const isIntersex = Math.random() < 0.3;
+    
+    // 保存确定后的性别
+    const confirmedGender = isIntersex ? 'intersex' : originalGender;
+    chuanyueRulesData.confirmedGender = confirmedGender;
+    localStorage.setItem(getStorageKey('chuanyueRulesData'), JSON.stringify(chuanyueRulesData));
+    
+    // 添加系统消息显示结果
+    const messagesContainer = document.getElementById('messagesContainer');
+    const systemMsg = document.createElement('div');
+    systemMsg.className = 'message system-message gender-result-message';
+    
+    if (isIntersex) {
+        systemMsg.innerHTML = `
+            <div class="gender-result intersex">
+                <div class="gender-result-icon">⚧️</div>
+                <div class="gender-result-content">
+                    <div class="gender-result-title">【性别随机结果】</div>
+                    <div class="gender-result-text">命运的轮盘转动... 你在本次穿越中获得了<strong>双性体质</strong>！</div>
+                    <div class="gender-result-desc">同时拥有男性和女性的身体特征，这将影响你在这个世界的体验。</div>
+                </div>
+            </div>
+        `;
+    } else {
+        systemMsg.innerHTML = `
+            <div class="gender-result normal">
+                <div class="gender-result-icon">${originalGender === 'male' ? '♂️' : originalGender === 'female' ? '♀️' : '⚥'}</div>
+                <div class="gender-result-content">
+                    <div class="gender-result-title">【性别随机结果】</div>
+                    <div class="gender-result-text">命运的轮盘转动... 你保持了原本的<strong>${originalGenderText}性</strong>身份。</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    messagesContainer.appendChild(systemMsg);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // 更新侧边栏显示
+    renderWorldInfo();
 }
 
 async function generateOpeningScene() {
@@ -5964,26 +6470,26 @@ async function generateWorldOptions() {
         };
         const typeName = typeNames[chuanyueRulesData?.kuaichuanType] || '未知';
         
-        // 处理性别设置
+        // 处理性别设置 - 使用已确定的性别
         let genderInfo = '';
-        const userGender = characterProfile?.gender || '男';
+        const genderMap = { 'male': '男', 'female': '女', 'other': '其他' };
+        const userGender = genderMap[characterProfile?.gender] || '男';
         
-        if (chuanyueRulesData?.genderSetting === 'random') {
-            // 概率双性：为每个世界随机决定
-            const world1Intersex = Math.random() < 0.3;
-            const world2Intersex = Math.random() < 0.3;
-            const world3Intersex = Math.random() < 0.3;
+        if (chuanyueRulesData?.confirmedGender === 'intersex') {
             genderInfo = `
-【性别设定 - 概率双性模式】
-用户原本性别：${userGender}
-- 世界一：${world1Intersex ? '⚧️ 双性体质（同时拥有男女特征）' : `保持${userGender}性`}
-- 世界二：${world2Intersex ? '⚧️ 双性体质（同时拥有男女特征）' : `保持${userGender}性`}
-- 世界三：${world3Intersex ? '⚧️ 双性体质（同时拥有男女特征）' : `保持${userGender}性`}
-
-请在用户身份中明确标注该世界的性别状态！`;
+【性别设定 - 已确定】
+★ 用户本次穿越为【双性体质】
+- 同时拥有男性和女性的完整身体特征
+- 所有世界都使用此设定
+- 请在用户身份中明确标注"双性体质"`;
+        } else if (chuanyueRulesData?.confirmedGender) {
+            const confirmedText = genderMap[chuanyueRulesData.confirmedGender] || userGender;
+            genderInfo = `\n用户性别：${confirmedText}性（已确定）`;
         } else {
-            genderInfo = `\n用户性别：${userGender}（保持不变）`;
+            genderInfo = `\n用户性别：${userGender}性`;
         }
+        
+        const needGenderNote = chuanyueRulesData?.confirmedGender === 'intersex';
         
         const userPrompt = `【系统启动】请生成三个可供选择的世界。
 
@@ -5996,7 +6502,7 @@ ${genderInfo}
 2. 世界简介（30-50字）
 3. 世界设定（该世界的特殊规则、背景、势力等，50-80字）
 4. 任务目标（根据${typeName}类型设计）
-5. 用户身份（姓名、身份、与目标的关系${chuanyueRulesData?.genderSetting === 'random' ? '、性别状态' : ''}）
+5. 用户身份（姓名、身份、与目标的关系${needGenderNote ? '、注明双性体质' : ''}）
 6. 目标角色（姓名、身份、性格、当前状态、需要${typeName}的原因）
 
 请严格按以下格式返回：
@@ -6008,7 +6514,7 @@ ${genderInfo}
 📖 简介：xxx
 ⚙️ 设定：xxx
 🎯 任务：xxx
-👤 你的身份：xxx${chuanyueRulesData?.genderSetting === 'random' ? '（注明性别状态）' : ''}
+👤 你的身份：xxx${needGenderNote ? '（双性体质）' : ''}
 💫 目标角色：xxx（攻）- xxx
 
 【世界二】
@@ -6016,7 +6522,7 @@ ${genderInfo}
 📖 简介：xxx
 ⚙️ 设定：xxx
 🎯 任务：xxx
-👤 你的身份：xxx${chuanyueRulesData?.genderSetting === 'random' ? '（注明性别状态）' : ''}
+👤 你的身份：xxx${needGenderNote ? '（双性体质）' : ''}
 💫 目标角色：xxx（攻）- xxx
 
 【世界三】
@@ -6024,7 +6530,7 @@ ${genderInfo}
 📖 简介：xxx
 ⚙️ 设定：xxx
 🎯 任务：xxx
-👤 你的身份：xxx${chuanyueRulesData?.genderSetting === 'random' ? '（注明性别状态）' : ''}
+👤 你的身份：xxx${needGenderNote ? '（双性体质）' : ''}
 💫 目标角色：xxx（攻）- xxx
 
 请回复数字 1、2 或 3 选择目标世界。`;
@@ -6139,9 +6645,114 @@ function buildChuanyueSystemPrompt() {
 系统会根据用户表现发布任务、给予奖励或惩罚。
 
 ` 
+        : gameMode === 'chuanshu' 
+        ? `你是一个专业的互动小说AI，正在运行一个穿书题材的角色扮演游戏。
+
+【穿书模式说明】
+用户穿越进入了一本小说的世界，成为书中的一个角色。
+用户知道原著剧情，可以利用这些知识改变命运。
+
+`
+        : gameMode === 'wuxianliu'
+        ? `你是一个专业的互动小说AI，正在运行一个无限流题材的角色扮演游戏。
+
+【无限流模式说明】
+用户被神秘力量选中，需要进入各种危险副本完成任务才能生存。
+每个副本都有独特的规则、怪物和挑战。
+生存是第一要务，同时要完成副本任务才能获得奖励和离开。
+
+`
         : `你是一个专业的互动小说AI，正在运行一个穿越题材的角色扮演游戏。
 
 `;
+
+    // 穿书模式专用设定
+    if (gameMode === 'chuanshu' && chuanyueRulesData) {
+        if (chuanyueRulesData.novel) {
+            prompt += `【📚原著内容】\n${chuanyueRulesData.novel}\n\n`;
+        }
+        
+        if (chuanyueRulesData.rebirth && chuanyueRulesData.rebirth !== 'none') {
+            const rebirthLabels = {
+                'protagonist': '原著主角已重生，拥有前世记忆',
+                'supporting': '原著男二已重生，拥有前世记忆',
+                'villain': '原著反派已重生，拥有前世记忆'
+            };
+            prompt += `【🔄重生设定】\n${rebirthLabels[chuanyueRulesData.rebirth]}\n这个重生者知道原著剧情，会做出与原著不同的选择。\n\n`;
+        }
+        
+        if (chuanyueRulesData.identity) {
+            prompt += `【👤穿书身份】\n${chuanyueRulesData.identity}\n\n`;
+        }
+    }
+    
+    // 无限流模式专用设定
+    if (gameMode === 'wuxianliu' && chuanyueRulesData) {
+        // 恐怖求生模式特殊规则
+        if (chuanyueRulesData.wuxianliuType === 'horror') {
+            prompt += `【👻 恐怖求生模式 - 核心规则】
+
+★★★ 玩家系统 ★★★
+1. 第一个副本开始时，自动生成4名其他玩家（不含宿主）
+2. 玩家信息要求：
+   - 姓名随机生成，性格各异
+   - 外貌必须非常好看（颜值在线）
+   - 年龄都比宿主小
+   - 其中必有一位：性别男，属性"攻"，对宿主有特殊兴趣
+3. 如果副本结束后存活玩家少于4人，下个副本开始时补充新玩家
+4. 特定的那位男性玩家不会在副本中死亡（有主角光环）
+
+★★★ 特殊角色设定 ★★★
+那位特定的男性玩家：
+- 对宿主很感兴趣，喜欢"欺负"宿主（色情意味的欺负）
+- 表面冷淡或玩世不恭，实则对宿主有占有欲
+- 在危险时刻会保护宿主
+- 【隐藏设定】这位玩家与副本中某些NPC实际上是同一个存在的不同碎片
+
+★★★ NPC系统 ★★★
+- 每个副本随机生成剧情NPC，帮助玩家了解剧情线索
+- NPC可能：诚实回答、撒谎欺骗、或拒绝回应
+- 如果NPC撒谎，必须通过描写暗示玩家他在说谎
+- 如果NPC不愿开口，需要暗示什么能让他开口（贿赂、威胁、触发条件等）
+
+★★★ 恐怖氛围写作规范 ★★★
+- 注重场景描写、人物描写、细节描写，侧面烘托恐怖氛围
+- 减少直接的鬼怪元素，主要通过诡异情节营造恐怖气氛
+- 禁止低级的Jump scare情节（禁止"突然一个鬼脸出现"这类）
+- 恐怖来源：压迫感、未知、暗示、细思极恐
+
+★★★ 科技限制 ★★★
+- 副本内禁止出现现代科技元素
+- 即便是现代背景，也需要通过合理设定剥夺玩家的枪械和电子产品
+- 可用的借口：信号屏蔽、电子产品失灵、被没收、规则禁止等
+
+`;
+        }
+        
+        // 自定义模式才显示副本背景
+        if (chuanyueRulesData.wuxianliuType !== 'horror' && chuanyueRulesData.settings) {
+            prompt += `【🎮首个副本背景】\n${chuanyueRulesData.settings}\n\n`;
+        }
+        
+        if (chuanyueRulesData.wuxianliuRole) {
+            prompt += `【👤宿主角色设定 - 严格遵守，禁止OOC】
+${chuanyueRulesData.wuxianliuRole}
+
+★★★ 重要规则 ★★★
+1. 用户正在扮演上述角色（宿主），AI必须配合用户的角色扮演
+2. AI不能替用户做决定、说话或行动
+3. AI只描写其他玩家、NPC、环境、剧情发展
+4. 宿主的行为完全由用户自己决定
+5. 如果用户的行为明显不符合角色设定（OOC），AI可以通过剧情暗示提醒
+
+`;
+        }
+        
+        // 自定义模式才显示额外规则
+        if (chuanyueRulesData.wuxianliuType !== 'horror' && chuanyueRulesData.rules) {
+            prompt += `【📜额外副本规则】\n${chuanyueRulesData.rules}\n\n`;
+        }
+    }
 
     // 全局世界观设定
     prompt += `【全局世界观】
@@ -6156,29 +6767,32 @@ function buildChuanyueSystemPrompt() {
 
 `;
 
-    prompt += `【用户原本信息】\n`;
-    
-    if (characterProfile) {
-        prompt += `名字：${characterProfile.name || '未知'}\n`;
-        if (characterProfile.age) prompt += `年龄：${characterProfile.age}岁\n`;
-        if (characterProfile.gender) {
-            const genderMap = { 'male': '男', 'female': '女', 'other': '其他' };
-            prompt += `性别：${genderMap[characterProfile.gender] || characterProfile.gender}\n`;
+    // 穿书模式和无限流模式不需要原本人设
+    if (gameMode !== 'chuanshu' && gameMode !== 'wuxianliu') {
+        prompt += `【用户原本信息】\n`;
+        
+        if (characterProfile) {
+            prompt += `名字：${characterProfile.name || '未知'}\n`;
+            if (characterProfile.age) prompt += `年龄：${characterProfile.age}岁\n`;
+            if (characterProfile.gender) {
+                const genderMap = { 'male': '男', 'female': '女', 'other': '其他' };
+                prompt += `性别：${genderMap[characterProfile.gender] || characterProfile.gender}\n`;
+            }
+            if (characterProfile.personality) prompt += `性格：${characterProfile.personality}\n`;
+            if (characterProfile.sensitive) prompt += `敏感带：${characterProfile.sensitive}\n`;
+            if (characterProfile.notes) prompt += `其他信息：${characterProfile.notes}\n`;
         }
-        if (characterProfile.personality) prompt += `性格：${characterProfile.personality}\n`;
-        if (characterProfile.sensitive) prompt += `敏感带：${characterProfile.sensitive}\n`;
-        if (characterProfile.notes) prompt += `其他信息：${characterProfile.notes}\n`;
-    }
 
-    // 穿越后的角色设定（所有模式）
-    if (transCharData && transCharData.name) {
-        const identityLabel = isKuaichuan ? '本世界身份' : '穿越后身份';
-        prompt += `\n【${identityLabel}】\n`;
-        prompt += `身份：${transCharData.name}\n`;
-        if (transCharData.background) prompt += `背景：${transCharData.background}\n`;
-        if (transCharData.situation) prompt += `当前处境：${transCharData.situation}\n`;
-        if (transCharData.ability) prompt += `特殊能力/金手指：${transCharData.ability}\n`;
-        if (transCharData.notes) prompt += `备注：${transCharData.notes}\n`;
+        // 穿越后的角色设定（非穿书模式）
+        if (transCharData && transCharData.name) {
+            const identityLabel = isKuaichuan ? '本世界身份' : '穿越后身份';
+            prompt += `\n【${identityLabel}】\n`;
+            prompt += `身份：${transCharData.name}\n`;
+            if (transCharData.background) prompt += `背景：${transCharData.background}\n`;
+            if (transCharData.situation) prompt += `当前处境：${transCharData.situation}\n`;
+            if (transCharData.ability) prompt += `特殊能力/金手指：${transCharData.ability}\n`;
+            if (transCharData.notes) prompt += `备注：${transCharData.notes}\n`;
+        }
     }
 
     if (chuanyueRulesData) {
@@ -6190,8 +6804,22 @@ function buildChuanyueSystemPrompt() {
         if (chuanyueRulesData.settings && !isKuaichuan) {
             prompt += `\n【世界背景】\n${chuanyueRulesData.settings}\n`;
         }
-        if (chuanyueRulesData.genderSetting === 'random') {
-            prompt += `\n【性别设定】用户选择了"概率双性"，有一定概率在故事中变为双性体质。\n`;
+        // 使用确定后的性别
+        if (chuanyueRulesData.confirmedGender) {
+            if (chuanyueRulesData.confirmedGender === 'intersex') {
+                prompt += `\n【性别设定 - 已确定】
+★★★ 用户本次穿越为【双性体质】★★★
+- 同时拥有男性和女性的完整身体特征
+- 这是穿越时随机决定的结果，在本世界不会改变
+- 所有涉及用户身体的描写都必须体现双性特征\n`;
+            } else {
+                const genderMap = { 'male': '男性', 'female': '女性', 'other': '其他' };
+                const genderText = genderMap[chuanyueRulesData.confirmedGender] || '男性';
+                prompt += `\n【性别设定 - 已确定】用户本次穿越保持${genderText}身份。\n`;
+            }
+        } else if (chuanyueRulesData.genderSetting === 'random') {
+            // 兼容旧数据
+            prompt += `\n【性别设定】用户选择了"概率双性"，有一定概率变为双性体质。\n`;
         }
         
         if (chuanyueRulesData.livestreamEnabled) {
