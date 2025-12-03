@@ -409,6 +409,14 @@
                         </div>
                         
                         <div class="settings-item">
+                            <button class="settings-btn settings-btn-test" id="testMainApiPage" style="width: 100%;">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M5 12 L10 17 L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>检测主API连接</span>
+                            </button>
+                            <div class="connection-status" id="mainApiStatusPage"></div>
+                        </div>
+                        
+                        <div class="settings-item">
                             <div class="settings-label-row">
                                 <label class="settings-label">温度 (Temperature)</label>
                                 <span class="temperature-value" id="tempValuePage">0.7</span>
@@ -459,11 +467,15 @@
                             <div class="fetch-status" id="backupFetchStatusPage"></div>
                         </div>
                         
-                        <div class="settings-actions">
-                            <button class="settings-btn settings-btn-test" id="testConnectionPage">
+                        <div class="settings-item">
+                            <button class="settings-btn settings-btn-test" id="testBackupApiPage" style="width: 100%;">
                                 <svg viewBox="0 0 24 24" fill="none"><path d="M5 12 L10 17 L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                <span>检测API</span>
+                                <span>检测备用API连接</span>
                             </button>
+                            <div class="connection-status" id="backupApiStatusPage"></div>
+                        </div>
+                        
+                        <div class="settings-actions">
                             <button class="settings-btn settings-btn-save" id="saveSettingsPage">
                                 <svg viewBox="0 0 24 24" fill="none"><path d="M19 21 H5 Q3 21 3 19 V5 Q3 3 5 3 H16 L21 8 V19 Q21 21 19 21 Z" stroke="currentColor" stroke-width="2"/><path d="M7 3 V8 H15" stroke="currentColor" stroke-width="2"/><rect x="7" y="13" width="10" height="8" stroke="currentColor" stroke-width="2"/></svg>
                                 <span>保存设置</span>
@@ -473,7 +485,6 @@
                                 <span>保存方案</span>
                             </button>
                         </div>
-                        <div class="connection-status" id="connectionStatusPage"></div>
                     </div>
                     
                     <!-- 主题设置 -->

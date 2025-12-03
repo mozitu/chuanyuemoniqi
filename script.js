@@ -139,19 +139,23 @@ const state = {
     successCount: parseInt(localStorage.getItem('successCount') || '0')
 };
 
-// API Settings State
+// API Settings State - 从localStorage加载
+const savedApiSettings = JSON.parse(localStorage.getItem('apiSettings') || '{}');
 const apiSettings = {
-    baseUrl: localStorage.getItem('apiBaseUrl') || '',
-    apiKey: localStorage.getItem('apiKey') || '',
-    model: localStorage.getItem('apiModel') || '',
-    temperature: parseFloat(localStorage.getItem('apiTemperature') || '0.7')
+    baseUrl: savedApiSettings.baseUrl || localStorage.getItem('apiBaseUrl') || '',
+    apiKey: savedApiSettings.apiKey || localStorage.getItem('apiKey') || '',
+    model: savedApiSettings.model || localStorage.getItem('apiModel') || '',
+    temperature: savedApiSettings.temperature ?? parseFloat(localStorage.getItem('apiTemperature') || '0.7'),
+    backupBaseUrl: savedApiSettings.backupBaseUrl || localStorage.getItem('backupApiBaseUrl') || '',
+    backupApiKey: savedApiSettings.backupApiKey || localStorage.getItem('backupApiKey') || '',
+    backupModel: savedApiSettings.backupModel || localStorage.getItem('backupModel') || ''
 };
 
-// Backup API Settings (for summary/stats, optional)
+// Backup API Settings (兼容旧代码)
 const backupApiSettings = {
-    baseUrl: localStorage.getItem('backupApiBaseUrl') || '',
-    apiKey: localStorage.getItem('backupApiKey') || '',
-    model: localStorage.getItem('backupModel') || ''
+    baseUrl: apiSettings.backupBaseUrl,
+    apiKey: apiSettings.backupApiKey,
+    model: apiSettings.backupModel
 };
 
 // Get backup API or fallback to main API
@@ -696,6 +700,7 @@ function init() {
     setupShopEvents();
     setupLivestreamEvents();
     setupThemeEvents();
+    setupSettingsPageEvents(); // 初始化设置页面事件
     loadSavedAvatar();
     loadSavedSettings();
     initializeDefaultWorldBook();
@@ -1091,31 +1096,31 @@ function closeSettingsSection() {
 
 function loadSettingsPage() {
     // 加载已保存的设置到页面
-    document.getElementById('apiBaseUrlPage').value = apiSettings.baseUrl;
-    document.getElementById('apiKeyPage').value = apiSettings.apiKey;
-    document.getElementById('temperatureSliderPage').value = apiSettings.temperature;
-    document.getElementById('tempValuePage').textContent = apiSettings.temperature;
+    document.getElementById('apiBaseUrlPage').value = apiSettings.baseUrl || '';
+    document.getElementById('apiKeyPage').value = apiSettings.apiKey || '';
+    document.getElementById('temperatureSliderPage').value = apiSettings.temperature || 0.7;
+    document.getElementById('tempValuePage').textContent = apiSettings.temperature || 0.7;
     document.getElementById('backupApiBaseUrlPage').value = apiSettings.backupBaseUrl || '';
     document.getElementById('backupApiKeyPage').value = apiSettings.backupApiKey || '';
     
     // 加载已保存的模型
     const modelSelect = document.getElementById('modelSelectPage');
+    modelSelect.innerHTML = '<option value="">请先拉取模型列表</option>';
     if (apiSettings.model) {
         const option = document.createElement('option');
         option.value = apiSettings.model;
         option.textContent = apiSettings.model;
         option.selected = true;
-        modelSelect.innerHTML = '';
         modelSelect.appendChild(option);
     }
     
     const backupModelSelect = document.getElementById('backupModelSelectPage');
+    backupModelSelect.innerHTML = '<option value="">留空则使用主模型</option>';
     if (apiSettings.backupModel) {
         const option = document.createElement('option');
         option.value = apiSettings.backupModel;
         option.textContent = apiSettings.backupModel;
         option.selected = true;
-        backupModelSelect.innerHTML = '<option value="">留空则使用主模型</option>';
         backupModelSelect.appendChild(option);
     }
     
@@ -1145,63 +1150,84 @@ function loadThemePage() {
     });
 }
 
+let settingsEventsInitialized = false;
+
 function setupSettingsPageEvents() {
+    // 防止重复绑定
+    if (settingsEventsInitialized) return;
+    settingsEventsInitialized = true;
+    
     // 返回按钮
-    document.getElementById('settingsBack').onclick = closeSettingsSection;
+    document.getElementById('settingsBack')?.addEventListener('click', closeSettingsSection);
     
     // 温度滑块
-    document.getElementById('temperatureSliderPage').oninput = (e) => {
+    document.getElementById('temperatureSliderPage')?.addEventListener('input', (e) => {
         document.getElementById('tempValuePage').textContent = e.target.value;
-    };
+    });
     
     // 显示/隐藏API密钥
-    document.getElementById('toggleApiKeyPage').onclick = () => {
+    document.getElementById('toggleApiKeyPage')?.addEventListener('click', () => {
         const input = document.getElementById('apiKeyPage');
         input.type = input.type === 'password' ? 'text' : 'password';
-    };
-    document.getElementById('toggleBackupApiKeyPage').onclick = () => {
+    });
+    document.getElementById('toggleBackupApiKeyPage')?.addEventListener('click', () => {
         const input = document.getElementById('backupApiKeyPage');
         input.type = input.type === 'password' ? 'text' : 'password';
-    };
+    });
     
     // 拉取模型
-    document.getElementById('fetchModelsPage').onclick = fetchModelsPage;
-    document.getElementById('fetchBackupModelsPage').onclick = fetchBackupModelsPage;
+    document.getElementById('fetchModelsPage')?.addEventListener('click', fetchModelsPage);
+    document.getElementById('fetchBackupModelsPage')?.addEventListener('click', fetchBackupModelsPage);
     
-    // 检测连接
-    document.getElementById('testConnectionPage').onclick = testConnectionPage;
+    // 检测主API连接
+    const testMainApiBtn = document.getElementById('testMainApiPage');
+    if (testMainApiBtn) {
+        testMainApiBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            testMainApiPage();
+        });
+    }
+    
+    // 检测备用API连接
+    const testBackupApiBtn = document.getElementById('testBackupApiPage');
+    if (testBackupApiBtn) {
+        testBackupApiBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            testBackupApiPage();
+        });
+    }
     
     // 保存设置
-    document.getElementById('saveSettingsPage').onclick = saveSettingsPage;
+    document.getElementById('saveSettingsPage')?.addEventListener('click', saveSettingsPage);
     
     // 保存方案
-    document.getElementById('saveSchemePage').onclick = saveSchemePage;
+    document.getElementById('saveSchemePage')?.addEventListener('click', saveSchemePage);
     
     // 删除方案
-    document.getElementById('deleteSchemePage').onclick = deleteSchemePage;
+    document.getElementById('deleteSchemePage')?.addEventListener('click', deleteSchemePage);
     
     // 加载方案
-    document.getElementById('apiSchemeSelectPage').onchange = loadSchemePage;
+    document.getElementById('apiSchemeSelectPage')?.addEventListener('change', loadSchemePage);
     
     // 主题选择
     document.querySelectorAll('#themeGridPage .theme-option').forEach(opt => {
-        opt.onclick = () => {
+        opt.addEventListener('click', () => {
             document.querySelectorAll('#themeGridPage .theme-option').forEach(o => o.classList.remove('active'));
             opt.classList.add('active');
             const theme = opt.dataset.theme;
             document.body.className = `theme-${theme}`;
             localStorage.setItem('theme', theme);
-        };
+        });
     });
     
     // 数据管理功能
-    document.getElementById('exportDataCard').onclick = exportAllData;
-    document.getElementById('importDataCard').onclick = () => {
+    document.getElementById('exportDataCard')?.addEventListener('click', exportAllData);
+    document.getElementById('importDataCard')?.addEventListener('click', () => {
         document.getElementById('importFileInput').click();
-    };
-    document.getElementById('importFileInput').onchange = importAllData;
-    document.getElementById('clearAllDataCard').onclick = clearAllStorageData;
-    document.getElementById('aboutCard').onclick = showAboutInfo;
+    });
+    document.getElementById('importFileInput')?.addEventListener('change', importAllData);
+    document.getElementById('clearAllDataCard')?.addEventListener('click', clearAllStorageData);
+    document.getElementById('aboutCard')?.addEventListener('click', showAboutInfo);
 }
 
 async function fetchModelsPage() {
@@ -1282,20 +1308,25 @@ async function fetchBackupModelsPage() {
     }
 }
 
-async function testConnectionPage() {
-    const baseUrl = document.getElementById('apiBaseUrlPage').value;
-    const apiKey = document.getElementById('apiKeyPage').value;
-    const model = document.getElementById('modelSelectPage').value;
-    const status = document.getElementById('connectionStatusPage');
+async function testMainApiPage() {
+    const baseUrl = document.getElementById('apiBaseUrlPage')?.value?.trim();
+    const apiKey = document.getElementById('apiKeyPage')?.value?.trim();
+    const model = document.getElementById('modelSelectPage')?.value;
+    const status = document.getElementById('mainApiStatusPage');
     
-    if (!baseUrl || !apiKey || !model) {
-        status.textContent = '请先填写完整的API配置';
-        status.className = 'connection-status error';
+    if (!status) {
+        console.error('mainApiStatusPage not found');
         return;
     }
     
-    status.textContent = '正在检测...';
-    status.className = 'connection-status';
+    if (!baseUrl || !apiKey || !model) {
+        status.textContent = '请先填写完整的API配置（地址、密钥、模型）';
+        status.className = 'connection-status error show';
+        return;
+    }
+    
+    status.textContent = '正在检测主API...';
+    status.className = 'connection-status show';
     
     try {
         const response = await fetch(baseUrl.replace(/\/$/, '') + '/chat/completions', {
@@ -1311,13 +1342,71 @@ async function testConnectionPage() {
             })
         });
         
-        if (!response.ok) throw new Error('连接失败');
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errText.slice(0, 100)}`);
+        }
         
-        status.textContent = '✓ API连接正常';
-        status.className = 'connection-status success';
+        status.textContent = '✓ 主API连接正常';
+        status.className = 'connection-status success show';
     } catch (error) {
-        status.textContent = '✗ 连接失败: ' + error.message;
-        status.className = 'connection-status error';
+        status.textContent = '✗ 主API连接失败: ' + error.message;
+        status.className = 'connection-status error show';
+    }
+}
+
+async function testBackupApiPage() {
+    const baseUrl = document.getElementById('backupApiBaseUrlPage')?.value?.trim();
+    const apiKey = document.getElementById('backupApiKeyPage')?.value?.trim();
+    const model = document.getElementById('backupModelSelectPage')?.value;
+    const status = document.getElementById('backupApiStatusPage');
+    
+    if (!status) {
+        console.error('backupApiStatusPage not found');
+        return;
+    }
+    
+    if (!baseUrl || !apiKey) {
+        status.textContent = '请先填写备用API配置（地址、密钥）';
+        status.className = 'connection-status error show';
+        return;
+    }
+    
+    // 如果没有指定备用模型，使用主模型
+    const testModel = model || document.getElementById('modelSelectPage')?.value;
+    if (!testModel) {
+        status.textContent = '请先选择模型（主模型或备用模型）';
+        status.className = 'connection-status error show';
+        return;
+    }
+    
+    status.textContent = '正在检测备用API...';
+    status.className = 'connection-status show';
+    
+    try {
+        const response = await fetch(baseUrl.replace(/\/$/, '') + '/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: testModel,
+                messages: [{ role: 'user', content: 'Hi' }],
+                max_tokens: 5
+            })
+        });
+        
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errText.slice(0, 100)}`);
+        }
+        
+        status.textContent = '✓ 备用API连接正常';
+        status.className = 'connection-status success show';
+    } catch (error) {
+        status.textContent = '✗ 备用API连接失败: ' + error.message;
+        status.className = 'connection-status error show';
     }
 }
 
@@ -1329,6 +1418,11 @@ function saveSettingsPage() {
     apiSettings.backupBaseUrl = document.getElementById('backupApiBaseUrlPage').value;
     apiSettings.backupApiKey = document.getElementById('backupApiKeyPage').value;
     apiSettings.backupModel = document.getElementById('backupModelSelectPage').value;
+    
+    // 同步更新backupApiSettings
+    backupApiSettings.baseUrl = apiSettings.backupBaseUrl;
+    backupApiSettings.apiKey = apiSettings.backupApiKey;
+    backupApiSettings.model = apiSettings.backupModel;
     
     localStorage.setItem('apiSettings', JSON.stringify(apiSettings));
     showToast('设置已保存');
