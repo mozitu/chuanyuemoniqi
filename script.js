@@ -599,8 +599,10 @@ function restorePageState() {
         const shopCard = document.getElementById('shopCard');
         const profileCard = document.getElementById('profileCard');
         
-        // 隐藏穿越人设卡片（人设自动合并到我的人设中）
-        if (transCharCard) transCharCard.style.display = 'none';
+        // 穿书模式和无限流模式隐藏穿越人设卡片（角色设定已在副本资料中显示）
+        if (transCharCard) {
+            transCharCard.style.display = (gameMode === 'chuanshu' || gameMode === 'wuxianliu') ? 'none' : '';
+        }
         if (worldBuildingCard) worldBuildingCard.style.display = '';
         
         // 穿书模式和无限流模式隐藏人设卡片
@@ -3485,8 +3487,10 @@ function openChuanyueMode() {
     const shopCard = document.getElementById('shopCard');
     const profileCard = document.getElementById('profileCard');
     
-    // 隐藏穿越人设卡片（人设自动合并到我的人设中）
-    if (transCharCard) transCharCard.style.display = 'none';
+    // 穿书模式和无限流模式隐藏穿越人设卡片（角色设定已在副本资料中显示）
+    if (transCharCard) {
+        transCharCard.style.display = (gameMode === 'chuanshu' || gameMode === 'wuxianliu') ? 'none' : '';
+    }
     if (worldBuildingCard) worldBuildingCard.style.display = '';
     
     // 穿书模式和无限流模式隐藏人设卡片
@@ -4005,8 +4009,9 @@ async function generateWorldBuilding() {
         return;
     }
 
-    // 快穿模式和穿书模式不需要检查settings
-    if (gameMode !== 'kuaichuan' && gameMode !== 'chuanshu' && (!chuanyueRulesData || !chuanyueRulesData.settings)) {
+    // 快穿模式、穿书模式和无限流恐怖模式不需要检查settings
+    const isHorrorMode = gameMode === 'wuxianliu' && chuanyueRulesData?.wuxianliuType === 'horror';
+    if (gameMode !== 'kuaichuan' && gameMode !== 'chuanshu' && !isHorrorMode && (!chuanyueRulesData || !chuanyueRulesData.settings)) {
         showToast('请先设置世界背景');
         return;
     }
@@ -4034,6 +4039,15 @@ async function generateWorldBuilding() {
             if (chuanyueRulesData?.identity) {
                 worldBackground += `\n\n穿书者身份：${chuanyueRulesData.identity}`;
             }
+        } else if (gameMode === 'wuxianliu') {
+            // 无限流模式：从聊天记录中提取副本信息
+            const firstAiMsg = chatHistory.find(m => m.type === 'ai');
+            if (firstAiMsg) {
+                worldBackground = `当前副本开场内容：\n${firstAiMsg.content}`;
+            }
+            if (chuanyueRulesData?.settings) {
+                worldBackground = chuanyueRulesData.settings + '\n\n' + worldBackground;
+            }
         } else {
             worldBackground = chuanyueRulesData?.settings || '';
         }
@@ -4047,8 +4061,28 @@ async function generateWorldBuilding() {
             body: JSON.stringify({
                 model: apiSettings.model,
                 messages: [
-                    { role: 'system', content: `你是一个世界观设计师。用思维导图的简洁格式生成世界设定，每个分类列出3-5个关键词条，每个词条用括号简短说明。严格按JSON格式返回。` },
-                    { role: 'user', content: `请根据以下世界背景生成简洁的世界设定思维导图：
+                    { role: 'system', content: gameMode === 'wuxianliu' 
+                        ? `你是一个副本设定整理师。从副本信息中提取关键设定，用思维导图的简洁格式整理，每个分类列出3-5个关键词条。严格按JSON格式返回。`
+                        : `你是一个世界观设计师。用思维导图的简洁格式生成世界设定，每个分类列出3-5个关键词条，每个词条用括号简短说明。严格按JSON格式返回。` 
+                    },
+                    { role: 'user', content: gameMode === 'wuxianliu' 
+                        ? `请从以下副本信息中提取规则和目标：
+
+${worldBackground}
+
+格式要求：
+- 提取副本的核心规则和最终目标
+- 每条规则/目标简洁明了
+- 用顿号分隔条目
+
+返回格式（严格JSON）：
+{
+  "rules": "副本规则，如：禁止使用电子设备（违者死亡）、夜间禁止外出（会遇到危险）、不能直视镜子（会被带走）",
+  "goals": "最终目标/通关条件，如：找到失踪者（主线目标）、存活7天（时间限制）、解开诅咒真相（隐藏目标）",
+  "taboos": "禁忌事项，如：不能提起某人名字、不能进入某房间、不能在某时间做某事",
+  "hints": "已知线索/提示，如：地下室有秘密、老照片少了一人、管家知道真相"
+}`
+                        : `请根据以下世界背景生成简洁的世界设定思维导图：
 
 ${worldBackground}
 
@@ -4066,7 +4100,8 @@ ${worldBackground}
   "technology": "科技/技术/功法的关键词条",
   "rules": "规矩禁忌的关键词条",
   "special": "特殊设定的关键词条"
-}` }
+}` 
+                    }
                 ],
                 temperature: 0.8
             })
@@ -4335,7 +4370,13 @@ function renderWorldBuilding() {
         return;
     }
 
-    const categories = [
+    // 无限流模式使用不同的分类（专注于规则和目标）
+    const categories = gameMode === 'wuxianliu' ? [
+        { key: 'rules', title: '📜 副本规则' },
+        { key: 'goals', title: '🎯 最终目标' },
+        { key: 'taboos', title: '⛔ 禁忌事项' },
+        { key: 'hints', title: '🔍 线索提示' }
+    ] : [
         { key: 'factions', title: '势力' },
         { key: 'power', title: '体系' },
         { key: 'economy', title: '经济' },
@@ -4349,13 +4390,25 @@ function renderWorldBuilding() {
     categories.forEach(cat => {
         if (worldBuildingData[cat.key]) {
             hasContent = true;
-            nodes += renderMindmapNode(cat.title, worldBuildingData[cat.key]);
+            // 无限流模式的线索部分添加刷新按钮
+            if (gameMode === 'wuxianliu' && cat.key === 'hints') {
+                nodes += renderMindmapNodeWithRefresh(cat.title, worldBuildingData[cat.key]);
+            } else {
+                nodes += renderMindmapNode(cat.title, worldBuildingData[cat.key]);
+            }
         }
     });
     nodes += '</div>';
 
     if (hasContent) {
         body.innerHTML = nodes;
+        // 绑定刷新线索按钮事件
+        if (gameMode === 'wuxianliu') {
+            const refreshHintsBtn = body.querySelector('.refresh-hints-btn');
+            if (refreshHintsBtn) {
+                refreshHintsBtn.onclick = refreshHints;
+            }
+        }
     } else {
         body.innerHTML = '<div style="color:var(--text-muted);">暂无设定</div>';
     }
@@ -4384,6 +4437,115 @@ function renderMindmapNode(title, content) {
         <div class="mindmap-title">${title}</div>
         <div class="mindmap-tags">${tagsHtml}</div>
     </div>`;
+}
+
+// 渲染带刷新按钮的思维导图节点（用于无限流线索）
+function renderMindmapNodeWithRefresh(title, content) {
+    const items = content.split(/[、，,]/).map(item => item.trim()).filter(item => item);
+    
+    let tagsHtml = '';
+    items.forEach(item => {
+        const match = item.match(/^([^（(]+)[（(]([^）)]+)[）)]?$/);
+        if (match) {
+            tagsHtml += `<span class="mindmap-tag">
+                <span class="tag-name">${escapeHtml(match[1].trim())}</span>
+                <span class="tag-desc">${escapeHtml(match[2].trim())}</span>
+            </span>`;
+        } else {
+            tagsHtml += `<span class="mindmap-tag"><span class="tag-name">${escapeHtml(item)}</span></span>`;
+        }
+    });
+    
+    return `<div class="mindmap-node hints-node">
+        <div class="mindmap-title-row">
+            <div class="mindmap-title">${title}</div>
+            <button class="refresh-hints-btn" title="根据剧情刷新线索">
+                <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
+                    <path d="M1 4 v6 h6 M23 20 v-6 h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20.49 9 A9 9 0 0 0 5.64 5.64 L1 10 M23 14 l-4.64 4.36 A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="mindmap-tags">${tagsHtml}</div>
+    </div>`;
+}
+
+// 刷新无限流线索
+async function refreshHints() {
+    if (!apiSettings.baseUrl || !apiSettings.apiKey || !apiSettings.model) {
+        showToast('请先配置API');
+        return;
+    }
+    
+    if (chatHistory.length < 2) {
+        showToast('剧情还不够，请先进行一些对话');
+        return;
+    }
+    
+    const refreshBtn = document.querySelector('.refresh-hints-btn');
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<div class="loading-spinner-small"></div>';
+    }
+    
+    try {
+        // 获取最近的聊天记录
+        const recentMessages = chatHistory.slice(-10).map(m => 
+            `${m.type === 'user' ? '玩家' : 'AI'}：${m.content.substring(0, 500)}`
+        ).join('\n\n');
+        
+        const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiSettings.apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: apiSettings.model,
+                messages: [
+                    { role: 'system', content: '你是一个副本线索整理师。根据剧情对话提取当前已知的线索和提示。' },
+                    { role: 'user', content: `请根据以下剧情对话，提取当前已知的线索和提示：
+
+${recentMessages}
+
+${worldBuildingData?.hints ? `之前已知的线索：${worldBuildingData.hints}` : ''}
+
+要求：
+- 整合新旧线索，去重并更新
+- 每条线索简洁明了（10字以内）
+- 用顿号分隔
+- 只返回线索内容，不要其他文字
+
+格式示例：地下室有秘密、老照片少了一人、管家知道真相` }
+                ],
+                temperature: 0.7
+            })
+        });
+        
+        if (!response.ok) throw new Error('API请求失败');
+        
+        const data = await response.json();
+        const newHints = data.choices[0]?.message?.content?.trim() || '';
+        
+        if (newHints) {
+            worldBuildingData.hints = newHints;
+            localStorage.setItem(getStorageKey('worldBuildingData'), JSON.stringify(worldBuildingData));
+            renderWorldBuilding();
+            showToast('线索已更新');
+        }
+        
+    } catch (error) {
+        console.error('Refresh hints error:', error);
+        showToast('刷新失败: ' + error.message);
+    } finally {
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" width="14" height="14">
+                <path d="M1 4 v6 h6 M23 20 v-6 h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20.49 9 A9 9 0 0 0 5.64 5.64 L1 10 M23 14 l-4.64 4.36 A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`;
+        }
+    }
 }
 
 // ==================== PLAYER STATUS ====================
@@ -6746,7 +6908,47 @@ async function generateDirectOpening() {
 
     try {
         const systemPrompt = buildChuanyueSystemPrompt();
-        const userPrompt = `请生成穿越故事的开场场景。
+        
+        // 无限流模式特殊开场提示
+        let userPrompt;
+        if (gameMode === 'wuxianliu') {
+            const isHorror = chuanyueRulesData?.wuxianliuType === 'horror';
+            userPrompt = `请生成无限流副本的开场。
+
+【要求】
+1. 首先生成当前场景的状态信息（JSON格式）
+2. 然后按以下顺序生成内容：
+
+${isHorror ? `【副本信息】（必须包含）
+- 副本名称（诡异恐怖风格的名字）
+- 副本背景介绍（200字左右，营造压抑恐怖的氛围）
+- 副本规则（清晰列出3-5条规则，包括禁止使用电子设备等）
+- 通关条件（模糊暗示，不要太直白）
+
+【玩家介绍】（必须包含）
+生成4名其他玩家的信息：
+- 每个玩家：姓名、年龄（比宿主小）、性别、外貌（必须好看）、性格特点
+- 其中一位必须是：男性，性格冷淡/玩世不恭，对宿主有特殊的关注（暗示他对宿主感兴趣）
+
+【开场描写】（400-600字）
+- 描写宿主和其他玩家被传送到副本的场景
+- 营造诡异恐怖的氛围
+- 可以安排那位特殊玩家与宿主的初次互动` : `【副本信息】
+- 副本名称
+- 副本背景介绍
+- 副本规则
+- 通关条件
+
+【开场描写】（300-500字）
+描写进入副本的场景`}
+
+请严格按以下格式返回：
+【状态】
+{"date":"第1天","time":"未知","location":"副本入口","weather":"阴"}
+【正文】
+（按上述要求生成的内容）`;
+        } else {
+            userPrompt = `请生成穿越故事的开场场景。
 
 要求：
 1. 首先生成当前场景的状态信息（JSON格式）
@@ -6757,6 +6959,7 @@ async function generateDirectOpening() {
 {"date":"日期（如：天启三年二月初五）","time":"24小时制时间（古代请用时辰+括号说明，如：07:30（卯时三刻））","location":"地点","weather":"天气"}
 【正文】
 （开场描写内容）`;
+        }
 
         const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
             method: 'POST',

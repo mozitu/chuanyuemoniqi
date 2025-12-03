@@ -5176,6 +5176,52 @@ input[type="range"] {
     font-weight: 600;
 }
 
+/* 线索刷新按钮 */
+.mindmap-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.refresh-hints-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 6px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.refresh-hints-btn:hover {
+    color: var(--gold-primary);
+    border-color: var(--gold-primary);
+    background: rgba(201, 169, 89, 0.1);
+}
+
+.refresh-hints-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.loading-spinner-small {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--gold-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.hints-node {
+    border-left: 2px solid var(--gold-primary);
+    padding-left: 8px;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .chuanyue-sidebar {
