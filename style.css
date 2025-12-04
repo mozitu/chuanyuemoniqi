@@ -5292,6 +5292,369 @@ input[type="range"] {
     font-size: 0.85rem;
 }
 
+/* 其他功能 - App网格 */
+.others-app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 16px;
+    padding: 20px;
+}
+
+.others-app-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.others-app-card:hover {
+    background: var(--bg-hover);
+    border-color: var(--gold);
+    transform: translateY(-2px);
+}
+
+.others-app-card .app-icon {
+    width: 48px;
+    height: 48px;
+}
+
+.others-app-card .app-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.others-app-card .app-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.others-app-card .app-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* 通讯App模态框 */
+.chat-app-modal {
+    width: 90%;
+    max-width: 500px;
+    height: 80vh;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-app-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+/* 联系人列表 */
+.chat-app-contacts {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.contacts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+}
+
+.contacts-header small {
+    color: var(--text-muted);
+    font-weight: normal;
+}
+
+.contacts-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.contacts-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.contacts-empty svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.contacts-empty p {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.contacts-empty small {
+    font-size: 0.8rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.contact-item:hover {
+    background: var(--bg-hover);
+}
+
+.contact-item .contact-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, #8b6914 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bg-primary);
+    flex-shrink: 0;
+}
+
+.contact-item .contact-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.contact-item .contact-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.contact-item .contact-preview {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.contact-item .contact-badge {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e74c3c;
+    flex-shrink: 0;
+}
+
+/* 私聊界面 */
+.chat-app-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-app-chat.hidden {
+    display: none;
+}
+
+.chat-app-chat .chat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.chat-back-btn, .chat-clear-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.chat-back-btn:hover, .chat-clear-btn:hover {
+    background: var(--bg-hover);
+}
+
+.chat-back-btn svg, .chat-clear-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.chat-back-btn svg path, .chat-clear-btn svg path {
+    stroke: var(--text-muted);
+}
+
+.chat-contact-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-contact-info .contact-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, #8b6914 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--bg-primary);
+}
+
+.chat-contact-info .contact-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.chat-messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-app-message {
+    display: flex;
+    gap: 8px;
+    max-width: 85%;
+}
+
+.chat-app-message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.chat-app-message .message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, #8b6914 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bg-primary);
+    flex-shrink: 0;
+}
+
+.chat-app-message.user .message-avatar {
+    background: linear-gradient(135deg, #4a90a4 0%, #2d5a6a 100%);
+}
+
+.chat-app-message .message-bubble {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.chat-app-message.user .message-bubble {
+    background: linear-gradient(135deg, var(--gold) 0%, #8b6914 100%);
+    color: var(--bg-primary);
+    border: none;
+}
+
+.chat-app-message .message-time {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.chat-input-container .chat-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    resize: none;
+    max-height: 100px;
+    font-family: inherit;
+}
+
+.chat-input-container .chat-input:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+.chat-send-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: linear-gradient(135deg, var(--gold) 0%, #8b6914 100%);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.chat-send-btn:hover {
+    transform: scale(1.05);
+}
+
+.chat-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.chat-send-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.chat-send-btn svg path {
+    stroke: var(--bg-primary);
+}
+
 /* 设置页面 */
 .settings-page {
     max-width: 700px;

@@ -604,9 +604,82 @@
                     <h2>其他功能</h2>
                 </div>
                 <div class="others-content">
-                    <div class="others-empty">
-                        <p>暂无其他功能</p>
-                        <small>敬请期待</small>
+                    <!-- 通讯App入口 -->
+                    <div class="others-app-grid">
+                        <div class="others-app-card" id="chatAppCard">
+                            <div class="app-icon">
+                                <svg viewBox="0 0 48 48" fill="none">
+                                    <rect x="6" y="8" width="36" height="32" rx="4" stroke="#c9a959" stroke-width="2" fill="none"/>
+                                    <path d="M14 18 H34 M14 24 H28 M14 30 H22" stroke="#8b7355" stroke-width="2" stroke-linecap="round"/>
+                                    <circle cx="36" cy="12" r="6" fill="#e74c3c"/>
+                                </svg>
+                            </div>
+                            <div class="app-name">通讯录</div>
+                            <div class="app-desc">与角色私聊</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 通讯App模态框 -->
+        <div class="modal-overlay" id="chatAppModal">
+            <div class="modal-box chat-app-modal">
+                <div class="modal-header">
+                    <h3 id="chatAppTitle">通讯录</h3>
+                    <button class="modal-close" id="chatAppClose">
+                        <svg viewBox="0 0 28 28" fill="none">
+                            <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body chat-app-body">
+                    <!-- 联系人列表 -->
+                    <div class="chat-app-contacts" id="chatAppContacts">
+                        <div class="contacts-header">
+                            <span>联系人</span>
+                            <small id="contactsCount">0人</small>
+                        </div>
+                        <div class="contacts-list" id="contactsList">
+                            <div class="contacts-empty">
+                                <svg viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="18" r="10" stroke="#7a6f5f" stroke-width="2"/>
+                                    <path d="M8 42 C8 32 16 26 24 26 C32 26 40 32 40 42" stroke="#7a6f5f" stroke-width="2"/>
+                                </svg>
+                                <p>暂无联系人</p>
+                                <small>开始剧情后，遇到的角色会出现在这里</small>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 私聊界面 -->
+                    <div class="chat-app-chat hidden" id="chatAppChat">
+                        <div class="chat-header">
+                            <button class="chat-back-btn" id="chatAppBackBtn">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M15 18 L9 12 L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                            <div class="chat-contact-info">
+                                <div class="contact-avatar" id="chatContactAvatar">角</div>
+                                <div class="contact-name" id="chatContactName">角色名</div>
+                            </div>
+                            <button class="chat-clear-btn" id="chatAppClearBtn" title="清空聊天记录">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M4 6 H20 M8 6 V4 H16 V6 M6 6 V20 H18 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="chat-messages-container" id="chatAppMessages">
+                            <!-- 私聊消息 -->
+                        </div>
+                        <div class="chat-input-container">
+                            <textarea class="chat-input" id="chatAppInput" placeholder="输入消息..." rows="1"></textarea>
+                            <button class="chat-send-btn" id="chatAppSendBtn">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M22 2 L11 13 M22 2 L15 22 L11 13 L2 9 Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -641,30 +714,6 @@
                 </div>
                 
                 <div class="sidebar-content">
-                    <!-- Character Profile Card -->
-                    <div class="profile-card" id="profileCard">
-                        <div class="profile-header">
-                            <div class="profile-icon">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                    <circle cx="12" cy="8" r="4" stroke="#c9a959" stroke-width="2"/>
-                                    <path d="M4 20 Q4 14 12 14 Q20 14 20 20" stroke="#c9a959" stroke-width="2"/>
-                                </svg>
-                            </div>
-                            <div class="profile-title">我的人设</div>
-                            <button class="profile-edit-btn" id="editProfileBtn" title="编辑人设">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                    <path d="M16 3 L21 8 L8 21 H3 V16 Z" stroke="currentColor" stroke-width="2"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="profile-body" id="profileBody">
-                            <div class="profile-empty">
-                                <p>尚未设置人设</p>
-                                <button class="profile-create-btn" id="createProfileBtn">创建人设</button>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <!-- Role Identity Card (穿书/无限流专用) -->
                     <div class="profile-card role-identity-card" id="roleIdentityCard" style="display: none;">
                         <div class="profile-header">
@@ -1214,6 +1263,37 @@
                 </button>
             </div>
             <div class="modal-body">
+                <!-- 基本信息（穿越/快穿模式） -->
+                <div id="basicInfoGroup">
+                    <div class="form-section-title">👤 基本信息</div>
+                    <div class="form-row">
+                        <div class="form-item form-item-half">
+                            <label class="form-label">姓名</label>
+                            <input type="text" class="form-input" id="userName" placeholder="你的名字">
+                        </div>
+                        <div class="form-item form-item-half">
+                            <label class="form-label">年龄</label>
+                            <input type="number" class="form-input" id="userAge" placeholder="年龄" min="1" max="200">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item form-item-half">
+                            <label class="form-label">性别</label>
+                            <select class="form-select" id="userGender">
+                                <option value="">请选择</option>
+                                <option value="male">男</option>
+                                <option value="female">女</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-item form-item-half">
+                            <label class="form-label">性格偏好</label>
+                            <input type="text" class="form-input" id="userPersonality" placeholder="如：温柔、冷静、活泼">
+                        </div>
+                    </div>
+                    <div class="form-divider"></div>
+                </div>
+                
                 <!-- 快穿任务类型选择 -->
                 <div class="form-item" id="kuaichuanTypeItem" style="display: none;">
                     <label class="form-label">任务类型</label>

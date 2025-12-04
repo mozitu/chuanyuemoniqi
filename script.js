@@ -220,7 +220,7 @@ function getStorageKey(key) {
 
 // Load mode-specific data
 function loadModeData() {
-    characterProfile = JSON.parse(localStorage.getItem(getStorageKey('characterProfile')) || 'null');
+    // characterProfile已删除，改用chuanyueRulesData中的基本信息
     chuanyueRulesData = JSON.parse(localStorage.getItem(getStorageKey('chuanyueRulesData')) || 'null');
     transCharData = JSON.parse(localStorage.getItem(getStorageKey('transCharData')) || 'null');
     worldBuildingData = JSON.parse(localStorage.getItem(getStorageKey('worldBuildingData')) || 'null');
@@ -731,17 +731,14 @@ function restorePageState() {
         const worldInfoTitle = document.querySelector('#worldInfoCard .sidebar-card-title');
         const worldBuildingTitle = document.querySelector('#worldBuildingCard .sidebar-card-title');
         const shopCard = document.getElementById('shopCard');
-        const profileCard = document.getElementById('profileCard');
         const roleIdentityCard = document.getElementById('roleIdentityCard');
         
-        // 穿书模式和无限流模式使用角色身份卡片，其他模式使用人设卡片
+        // 穿书模式和无限流模式使用角色身份卡片，其他模式隐藏
         if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
-            if (transCharCard) transCharCard.remove();
-            if (profileCard) profileCard.remove();
+            if (transCharCard) transCharCard.style.display = 'none';
             if (roleIdentityCard) roleIdentityCard.style.display = 'block';
         } else {
-            if (transCharCard) transCharCard.style.display = '';
-            if (profileCard) profileCard.style.display = '';
+            if (transCharCard) transCharCard.style.display = 'block';
             if (roleIdentityCard) roleIdentityCard.style.display = 'none';
         }
         if (worldBuildingCard) worldBuildingCard.style.display = '';
@@ -773,11 +770,10 @@ function restorePageState() {
             }
         }
         
-        // 穿书和无限流模式渲染角色身份，其他模式渲染人设
+        // 穿书和无限流模式渲染角色身份，其他模式渲染穿越人设
         if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
             renderRoleIdentity();
         } else {
-            renderProfile();
             renderTransChar();
         }
         renderWorldInfo();
@@ -2661,6 +2657,11 @@ function togglePreset(presetId) {
 function renderPresets() {
     const list = document.getElementById('presetList');
     
+    if (!list) {
+        console.error('presetList element not found');
+        return;
+    }
+    
     if (presets.length === 0) {
         list.innerHTML = '<div class="empty-state">暂无预设，点击下方按钮添加</div>';
         return;
@@ -2839,6 +2840,11 @@ function toggleWorldBookEntry(entryId) {
 
 function renderWorldBook() {
     const list = document.getElementById('worldBookList');
+    
+    if (!list) {
+        console.error('worldBookList element not found');
+        return;
+    }
     
     if (worldBook.length === 0) {
         list.innerHTML = '<div class="empty-state">暂无词条，点击下方按钮添加</div>';
@@ -3328,10 +3334,10 @@ function setupChuanyueMode() {
     const startBtn = document.getElementById('startChuanyueBtn');
 
     // Back to main menu
-    backBtn.addEventListener('click', closeChuanyueMode);
+    if (backBtn) backBtn.addEventListener('click', closeChuanyueMode);
 
     // Toggle sidebar
-    toggleBtn.addEventListener('click', toggleSidebar);
+    if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
     
     // Clear all data button
     const clearAllDataBtn = document.getElementById('clearAllDataBtn');
@@ -3340,7 +3346,7 @@ function setupChuanyueMode() {
     }
     
     // Floating menu button to expand sidebar
-    floatingMenuBtn.addEventListener('click', expandSidebar);
+    if (floatingMenuBtn) floatingMenuBtn.addEventListener('click', expandSidebar);
     
     // Click overlay to collapse sidebar
     const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -3348,90 +3354,106 @@ function setupChuanyueMode() {
         sidebarOverlay.addEventListener('click', collapseSidebar);
     }
 
-    // Open profile modal
-    editBtn.addEventListener('click', () => openProfileModal(true));
-    createBtn.addEventListener('click', () => openProfileModal(false));
+    // Open profile modal (已删除人设卡片，这些按钮不再存在)
+    if (editBtn) editBtn.addEventListener('click', () => openProfileModal(true));
+    if (createBtn) createBtn.addEventListener('click', () => openProfileModal(false));
 
     // Close profile modal
-    modalClose.addEventListener('click', closeProfileModal);
-    modalCancel.addEventListener('click', closeProfileModal);
-    profileModal.addEventListener('click', (e) => {
-        if (e.target === profileModal) closeProfileModal();
-    });
+    if (modalClose) modalClose.addEventListener('click', closeProfileModal);
+    if (modalCancel) modalCancel.addEventListener('click', closeProfileModal);
+    if (profileModal) {
+        profileModal.addEventListener('click', (e) => {
+            if (e.target === profileModal) closeProfileModal();
+        });
+    }
 
     // Save profile
-    modalSave.addEventListener('click', saveProfile);
+    if (modalSave) modalSave.addEventListener('click', saveProfile);
 
     // Gender selection
     setupGenderSelect();
 
     // Start button - open rules modal
-    startBtn.addEventListener('click', () => {
-        // 穿书模式和无限流模式跳过人设创建
-        if (gameMode !== 'chuanshu' && gameMode !== 'wuxianliu' && !characterProfile) {
-            showToast('请先创建人设');
-            openProfileModal(false);
-            return;
-        }
-        openChuanyueRulesModal();
-    });
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            // 已删除人设功能，直接打开设定模态框
+            openChuanyueRulesModal();
+        });
+    }
 
     // World info header toggle (collapsible)
     const worldInfoHeader = document.getElementById('worldInfoHeader');
-    worldInfoHeader.addEventListener('click', () => {
-        const body = document.getElementById('worldInfoBody');
-        const toggle = worldInfoHeader.querySelector('.sidebar-card-toggle');
-        body.classList.toggle('collapsed');
-        if (body.classList.contains('collapsed')) {
-            toggle.style.transform = 'rotate(-90deg)';
-        } else {
-            toggle.style.transform = 'rotate(0deg)';
-        }
-    });
+    if (worldInfoHeader) {
+        worldInfoHeader.addEventListener('click', () => {
+            const body = document.getElementById('worldInfoBody');
+            const toggle = worldInfoHeader.querySelector('.sidebar-card-toggle');
+            if (body) body.classList.toggle('collapsed');
+            if (body && toggle) {
+                if (body.classList.contains('collapsed')) {
+                    toggle.style.transform = 'rotate(-90deg)';
+                } else {
+                    toggle.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+    }
 
     // World building header toggle (collapsible)
     const worldBuildingHeader = document.getElementById('worldBuildingHeader');
-    worldBuildingHeader.addEventListener('click', (e) => {
-        // Don't toggle if clicking on refresh button
-        if (e.target.closest('.sidebar-card-refresh')) return;
-        const body = document.getElementById('worldBuildingBody');
-        const toggle = worldBuildingHeader.querySelector('.sidebar-card-toggle');
-        body.classList.toggle('collapsed');
-        if (body.classList.contains('collapsed')) {
-            toggle.style.transform = 'rotate(-90deg)';
-        } else {
-            toggle.style.transform = 'rotate(0deg)';
-        }
-    });
+    if (worldBuildingHeader) {
+        worldBuildingHeader.addEventListener('click', (e) => {
+            // Don't toggle if clicking on refresh button
+            if (e.target.closest('.sidebar-card-refresh')) return;
+            const body = document.getElementById('worldBuildingBody');
+            const toggle = worldBuildingHeader.querySelector('.sidebar-card-toggle');
+            if (body) body.classList.toggle('collapsed');
+            if (body && toggle) {
+                if (body.classList.contains('collapsed')) {
+                    toggle.style.transform = 'rotate(-90deg)';
+                } else {
+                    toggle.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+    }
 
     // Refresh world building button
-    document.getElementById('refreshWorldBuilding').addEventListener('click', generateWorldBuilding);
+    const refreshWorldBuilding = document.getElementById('refreshWorldBuilding');
+    if (refreshWorldBuilding) {
+        refreshWorldBuilding.addEventListener('click', generateWorldBuilding);
+    }
     
     // Refresh trans char button
-    document.getElementById('refreshTransCharBtn').addEventListener('click', generateTransChar);
+    const refreshTransCharBtn = document.getElementById('refreshTransCharBtn');
+    if (refreshTransCharBtn) {
+        refreshTransCharBtn.addEventListener('click', generateTransChar);
+    }
     
     // Trans char card toggle
-    document.getElementById('transCharHeader').addEventListener('click', (e) => {
-        if (e.target.closest('.sidebar-card-refresh')) return;
-        const body = document.getElementById('transCharBody');
-        const toggle = document.querySelector('#transCharCard .sidebar-card-toggle svg');
-        body.classList.toggle('collapsed');
-        if (toggle) {
-            toggle.style.transform = body.classList.contains('collapsed') ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
-    });
+    const transCharHeader = document.getElementById('transCharHeader');
+    if (transCharHeader) {
+        transCharHeader.addEventListener('click', (e) => {
+            if (e.target.closest('.sidebar-card-refresh')) return;
+            const body = document.getElementById('transCharBody');
+            const toggle = document.querySelector('#transCharCard .sidebar-card-toggle svg');
+            if (body) body.classList.toggle('collapsed');
+            if (toggle && body) {
+                toggle.style.transform = body.classList.contains('collapsed') ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
+        });
+    }
 
     // Restart button
-    document.getElementById('restartBtn').addEventListener('click', restartChuanyue);
+    const restartBtn = document.getElementById('restartBtn');
+    if (restartBtn) {
+        restartBtn.addEventListener('click', restartChuanyue);
+    }
 
     // Setup rules modal
     setupChuanyueRulesModal();
 
     // Setup chat
     setupChat();
-
-    // Render saved profile if exists
-    renderProfile();
     
     // Render world info if exists
     renderWorldInfo();
@@ -3690,6 +3712,7 @@ function openChuanyueRulesModal() {
     const kuaichuanTypeItem = document.getElementById('kuaichuanTypeItem');
     const kuaichuanTypeBtns = document.querySelectorAll('.kuaichuan-type-btn');
     const aiPolishBtn = document.getElementById('aiPolishBtn');
+    const basicInfoGroup = document.getElementById('basicInfoGroup');
 
     // 默认隐藏穿书设定
     const chuanshuGroup = document.getElementById('chuanshuSettingsGroup');
@@ -3698,6 +3721,13 @@ function openChuanyueRulesModal() {
     // 默认隐藏无限流设定
     document.getElementById('wuxianliuRoleItem').style.display = 'none';
     document.getElementById('wuxianliuTypeItem').style.display = 'none';
+    
+    // 根据模式显示/隐藏基本信息
+    if (gameMode === 'chuanyue' || gameMode === 'kuaichuan') {
+        basicInfoGroup.style.display = 'block';
+    } else {
+        basicInfoGroup.style.display = 'none';
+    }
     
     // Adjust modal based on game mode
     if (gameMode === 'kuaichuan') {
@@ -3826,6 +3856,14 @@ function openChuanyueRulesModal() {
         document.getElementById('livestreamEnabled').checked = chuanyueRulesData.livestreamEnabled || false;
         document.getElementById('kuaichuanType').value = chuanyueRulesData.kuaichuanType || '';
         
+        // 加载基本信息
+        if (gameMode === 'chuanyue' || gameMode === 'kuaichuan') {
+            document.getElementById('userName').value = chuanyueRulesData.userName || '';
+            document.getElementById('userAge').value = chuanyueRulesData.userAge || '';
+            document.getElementById('userGender').value = chuanyueRulesData.userGender || '';
+            document.getElementById('userPersonality').value = chuanyueRulesData.userPersonality || '';
+        }
+        
         genderSettingBtns.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.setting === chuanyueRulesData.genderSetting);
         });
@@ -3838,6 +3876,15 @@ function openChuanyueRulesModal() {
         document.getElementById('genderSetting').value = 'keep';
         document.getElementById('livestreamEnabled').checked = false;
         document.getElementById('kuaichuanType').value = '';
+        
+        // 清空基本信息
+        if (gameMode === 'chuanyue' || gameMode === 'kuaichuan') {
+            document.getElementById('userName').value = '';
+            document.getElementById('userAge').value = '';
+            document.getElementById('userGender').value = '';
+            document.getElementById('userPersonality').value = '';
+        }
+        
         genderSettingBtns.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.setting === 'keep');
         });
@@ -3860,6 +3907,22 @@ function confirmChuanyue() {
     const genderSetting = document.getElementById('genderSetting').value;
     const livestreamEnabled = document.getElementById('livestreamEnabled').checked;
     const kuaichuanType = document.getElementById('kuaichuanType').value;
+    
+    // 获取基本信息（穿越/快穿模式）
+    let basicInfo = {};
+    if (gameMode === 'chuanyue' || gameMode === 'kuaichuan') {
+        const userName = document.getElementById('userName').value.trim();
+        const userAge = document.getElementById('userAge').value.trim();
+        const userGender = document.getElementById('userGender').value;
+        const userPersonality = document.getElementById('userPersonality').value.trim();
+        
+        if (!userName) {
+            showToast('请填写姓名');
+            return;
+        }
+        
+        basicInfo = { userName, userAge, userGender, userPersonality };
+    }
 
     // Validate for kuaichuan mode
     if (gameMode === 'kuaichuan' && !kuaichuanType) {
@@ -3909,6 +3972,7 @@ function confirmChuanyue() {
         genderSetting,
         livestreamEnabled,
         kuaichuanType,
+        ...basicInfo,
         ...chuanshuData,
         ...wuxianliuData,
         updatedAt: Date.now()
@@ -4159,12 +4223,15 @@ function openChuanyueMode() {
     const worldInfoTitle = document.querySelector('#worldInfoCard .sidebar-card-title');
     const worldBuildingTitle = document.querySelector('#worldBuildingCard .sidebar-card-title');
     const shopCard = document.getElementById('shopCard');
-    const profileCard = document.getElementById('profileCard');
+    const roleIdentityCard = document.getElementById('roleIdentityCard');
     
-    // 穿书模式和无限流模式删除人设卡片
+    // 穿书模式和无限流模式显示角色身份卡片，其他模式隐藏
     if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
-        if (transCharCard) transCharCard.remove();
-        if (profileCard) profileCard.remove();
+        if (transCharCard) transCharCard.style.display = 'none';
+        if (roleIdentityCard) roleIdentityCard.style.display = 'block';
+    } else {
+        if (transCharCard) transCharCard.style.display = 'block';
+        if (roleIdentityCard) roleIdentityCard.style.display = 'none';
     }
     if (worldBuildingCard) worldBuildingCard.style.display = '';
     
@@ -4194,11 +4261,10 @@ function openChuanyueMode() {
         }
     }
     
-    // 穿书和无限流模式渲染角色身份，其他模式渲染人设
+    // 穿书和无限流模式渲染角色身份，其他模式渲染穿越人设
     if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
         renderRoleIdentity();
     } else {
-        renderProfile();
         renderTransChar();
     }
     renderWorldInfo();
@@ -4207,19 +4273,23 @@ function openChuanyueMode() {
 
 // 刷新模式UI（切换模式后调用）
 function refreshModeUI() {
-    // 穿书模式和无限流模式删除人设卡片
+    const transCharCard = document.getElementById('transCharCard');
+    const roleIdentityCard = document.getElementById('roleIdentityCard');
+    
+    // 穿书模式和无限流模式显示角色身份卡片，其他模式隐藏
     if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
-        const profileCard = document.getElementById('profileCard');
-        const transCharCard = document.getElementById('transCharCard');
-        if (profileCard) profileCard.remove();
-        if (transCharCard) transCharCard.remove();
+        if (transCharCard) transCharCard.style.display = 'none';
+        if (roleIdentityCard) roleIdentityCard.style.display = 'block';
+    } else {
+        // 穿越和快穿模式显示穿越人设卡片，隐藏角色身份卡片
+        if (transCharCard) transCharCard.style.display = 'block';
+        if (roleIdentityCard) roleIdentityCard.style.display = 'none';
     }
     
     // 渲染侧边栏内容
     if (gameMode === 'chuanshu' || gameMode === 'wuxianliu') {
         renderRoleIdentity();
     } else {
-        renderProfile();
         renderTransChar();
     }
     renderWorldInfo();
@@ -4266,14 +4336,14 @@ async function confirmClearAllData() {
     };
     const modeName = modeNames[gameMode] || '当前模式';
     
-    if (await customDangerConfirm(`确定要清除${modeName}的所有数据吗？\n\n这将删除：\n• 人设信息\n• 聊天记录\n• 世界/副本设定\n• 穿越人设\n• 状态数值\n• 所有相关存档\n\n此操作不可恢复！`, `清除${modeName}数据`)) {
+    if (await customDangerConfirm(`确定要清除${modeName}的所有数据吗？\n\n这将删除：\n• 基本信息（姓名、年龄等）\n• 聊天记录\n• 世界/副本设定\n• 穿越人设\n• 状态数值\n• 所有相关存档\n\n此操作不可恢复！`, `清除${modeName}数据`)) {
         clearAllModeData();
     }
 }
 
 // 清除当前模式所有数据
 function clearAllModeData() {
-    const prefix = `chuanyue_${gameMode}_`;
+    const prefix = `${gameMode}_`;
     
     // 获取所有需要清除的localStorage键
     const keysToRemove = [];
@@ -4287,8 +4357,7 @@ function clearAllModeData() {
     // 清除localStorage数据
     keysToRemove.forEach(key => localStorage.removeItem(key));
     
-    // 清除内存中的数据
-    characterProfile = null;
+    // 清除内存中的数据（已删除characterProfile）
     chuanyueRulesData = null;
     chatHistory = [];
     transCharData = null;
@@ -4310,13 +4379,17 @@ function clearAllModeData() {
         kuaichuanPoints = 0;
     }
     
-    // 重置UI
-    document.getElementById('chatMessages').innerHTML = '';
-    document.getElementById('startChuanyueBtn').style.display = 'flex';
-    document.getElementById('chatInputArea').classList.add('hidden');
+    // 重置UI（添加空值检查）
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) chatMessages.innerHTML = '';
+    
+    const startChuanyueBtn = document.getElementById('startChuanyueBtn');
+    if (startChuanyueBtn) startChuanyueBtn.style.display = 'flex';
+    
+    const chatInputArea = document.getElementById('chatInputArea');
+    if (chatInputArea) chatInputArea.classList.add('hidden');
     
     // 重新渲染所有组件
-    renderProfile();
     renderWorldInfo();
     renderTransChar();
     renderWorldBuilding();
@@ -4332,7 +4405,7 @@ function clearAllModeData() {
         updatePointsDisplay();
     }
     
-    showToast('所有数据已清除');
+    showToast('当前模式的所有数据已清除');
 }
 
 // ==================== TRANSMIGRATED CHARACTER ====================
@@ -4453,6 +4526,10 @@ function renderTransChar() {
     const body = document.getElementById('transCharBody');
     const refreshBtn = document.getElementById('refreshTransCharBtn');
     const titleEl = document.getElementById('transCharTitle');
+    
+    // 如果元素不存在或卡片被隐藏，则不渲染
+    if (!body) return;
+    if (card && card.style.display === 'none') return;
     
     // 快穿模式下更新标题
     if (titleEl) {
@@ -4708,15 +4785,16 @@ async function autoGenerateTransChar() {
         };
         
         let contextInfo = '';
-        if (characterProfile) {
+        // 使用基本信息（穿越/快穿模式）
+        if (chuanyueRulesData?.userName) {
             contextInfo += `用户原本信息：\n`;
-            if (characterProfile.name) contextInfo += `- 名字：${characterProfile.name}\n`;
-            if (characterProfile.age) contextInfo += `- 年龄：${characterProfile.age}岁\n`;
-            if (characterProfile.gender) {
+            contextInfo += `- 名字：${chuanyueRulesData.userName}\n`;
+            if (chuanyueRulesData.userAge) contextInfo += `- 年龄：${chuanyueRulesData.userAge}岁\n`;
+            if (chuanyueRulesData.userGender) {
                 const genderMap = { 'male': '男', 'female': '女', 'other': '其他' };
-                contextInfo += `- 性别：${genderMap[characterProfile.gender] || characterProfile.gender}\n`;
+                contextInfo += `- 性别：${genderMap[chuanyueRulesData.userGender] || chuanyueRulesData.userGender}\n`;
             }
-            if (characterProfile.personality) contextInfo += `- 性格：${characterProfile.personality}\n`;
+            if (chuanyueRulesData.userPersonality) contextInfo += `- 性格偏好：${chuanyueRulesData.userPersonality}\n`;
         }
         
         if (chuanyueRulesData?.settings) {
@@ -4777,9 +4855,6 @@ ${contextInfo}
             
             localStorage.setItem(getStorageKey('transCharData'), JSON.stringify(transCharData));
             localStorage.setItem(getStorageKey('transCharGenerated'), 'true');
-            
-            // 更新人设显示
-            renderProfile();
         }
     } catch (error) {
         console.error('Auto generate trans char error:', error);
@@ -6189,7 +6264,6 @@ function saveProfile() {
     };
 
     localStorage.setItem(getStorageKey('characterProfile'), JSON.stringify(characterProfile));
-    renderProfile();
     closeProfileModal();
     showToast('人设已保存');
 }
@@ -6244,7 +6318,8 @@ function renderRoleIdentity() {
 }
 
 function renderProfile() {
-    const profileBody = document.getElementById('profileBody');
+    // 已删除我的人设卡片，此函数不再需要
+    return;
 
     if (!characterProfile) {
         profileBody.innerHTML = `
@@ -8784,5 +8859,369 @@ function renderChatHistory() {
     });
 }
 
+// ==================== 通讯App功能 ====================
+
+// 私聊记录存储（独立于主剧情）
+let privateChatHistory = JSON.parse(localStorage.getItem('privateChatHistory') || '{}');
+let currentChatContact = null;
+let isChatAppSending = false;
+
+// 初始化通讯App
+function setupChatApp() {
+    const chatAppCard = document.getElementById('chatAppCard');
+    const chatAppModal = document.getElementById('chatAppModal');
+    const chatAppClose = document.getElementById('chatAppClose');
+    const chatAppBackBtn = document.getElementById('chatAppBackBtn');
+    const chatAppClearBtn = document.getElementById('chatAppClearBtn');
+    const chatAppSendBtn = document.getElementById('chatAppSendBtn');
+    const chatAppInput = document.getElementById('chatAppInput');
+    
+    if (!chatAppCard) return;
+    
+    // 打开通讯App
+    chatAppCard.addEventListener('click', openChatApp);
+    
+    // 关闭模态框
+    if (chatAppClose) {
+        chatAppClose.addEventListener('click', closeChatApp);
+    }
+    if (chatAppModal) {
+        chatAppModal.addEventListener('click', (e) => {
+            if (e.target === chatAppModal) closeChatApp();
+        });
+    }
+    
+    // 返回联系人列表
+    if (chatAppBackBtn) {
+        chatAppBackBtn.addEventListener('click', showContactsList);
+    }
+    
+    // 清空聊天记录
+    if (chatAppClearBtn) {
+        chatAppClearBtn.addEventListener('click', clearPrivateChat);
+    }
+    
+    // 发送消息
+    if (chatAppSendBtn) {
+        chatAppSendBtn.addEventListener('click', sendPrivateMessage);
+    }
+    
+    // 输入框回车发送
+    if (chatAppInput) {
+        chatAppInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendPrivateMessage();
+            }
+        });
+        
+        // 自动调整高度
+        chatAppInput.addEventListener('input', () => {
+            chatAppInput.style.height = 'auto';
+            chatAppInput.style.height = Math.min(chatAppInput.scrollHeight, 100) + 'px';
+        });
+    }
+}
+
+// 打开通讯App
+function openChatApp() {
+    const modal = document.getElementById('chatAppModal');
+    if (modal) {
+        modal.classList.add('active');
+        showContactsList();
+        renderContactsList();
+    }
+}
+
+// 关闭通讯App
+function closeChatApp() {
+    const modal = document.getElementById('chatAppModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+    currentChatContact = null;
+}
+
+// 显示联系人列表
+function showContactsList() {
+    const contactsView = document.getElementById('chatAppContacts');
+    const chatView = document.getElementById('chatAppChat');
+    const title = document.getElementById('chatAppTitle');
+    
+    if (contactsView) contactsView.classList.remove('hidden');
+    if (chatView) chatView.classList.add('hidden');
+    if (title) title.textContent = '通讯录';
+    
+    currentChatContact = null;
+    renderContactsList();
+}
+
+// 获取所有可聊天的角色（从importantCharacters获取）
+function getChatContacts() {
+    // 从所有模式收集角色
+    const contacts = [];
+    const modes = ['chuanyue', 'kuaichuan', 'chuanshu', 'wuxianliu'];
+    
+    modes.forEach(mode => {
+        const chars = JSON.parse(localStorage.getItem(`${mode}_importantCharacters`) || '[]');
+        chars.forEach(char => {
+            // 避免重复（按名字判断）
+            if (char.name && !contacts.find(c => c.name === char.name)) {
+                contacts.push({
+                    ...char,
+                    mode: mode,
+                    id: `${mode}_${char.name}`
+                });
+            }
+        });
+    });
+    
+    return contacts;
+}
+
+// 渲染联系人列表
+function renderContactsList() {
+    const listContainer = document.getElementById('contactsList');
+    const countEl = document.getElementById('contactsCount');
+    if (!listContainer) return;
+    
+    const contacts = getChatContacts();
+    
+    if (countEl) {
+        countEl.textContent = `${contacts.length}人`;
+    }
+    
+    if (contacts.length === 0) {
+        listContainer.innerHTML = `
+            <div class="contacts-empty">
+                <svg viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="18" r="10" stroke="#7a6f5f" stroke-width="2"/>
+                    <path d="M8 42 C8 32 16 26 24 26 C32 26 40 32 40 42" stroke="#7a6f5f" stroke-width="2"/>
+                </svg>
+                <p>暂无联系人</p>
+                <small>开始剧情后，遇到的角色会出现在这里</small>
+            </div>
+        `;
+        return;
+    }
+    
+    listContainer.innerHTML = contacts.map(contact => {
+        const chatKey = contact.id;
+        const history = privateChatHistory[chatKey] || [];
+        const lastMsg = history[history.length - 1];
+        const preview = lastMsg ? (lastMsg.role === 'user' ? '我: ' : '') + lastMsg.content.substring(0, 20) + (lastMsg.content.length > 20 ? '...' : '') : '点击开始聊天';
+        const firstChar = contact.name.charAt(0);
+        
+        return `
+            <div class="contact-item" onclick="openPrivateChat('${escapeHtml(contact.id)}', '${escapeHtml(contact.name)}')">
+                <div class="contact-avatar">${firstChar}</div>
+                <div class="contact-info">
+                    <div class="contact-name">${escapeHtml(contact.name)}</div>
+                    <div class="contact-preview">${escapeHtml(preview)}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 打开私聊界面
+function openPrivateChat(contactId, contactName) {
+    const contactsView = document.getElementById('chatAppContacts');
+    const chatView = document.getElementById('chatAppChat');
+    const title = document.getElementById('chatAppTitle');
+    const avatarEl = document.getElementById('chatContactAvatar');
+    const nameEl = document.getElementById('chatContactName');
+    
+    if (contactsView) contactsView.classList.add('hidden');
+    if (chatView) chatView.classList.remove('hidden');
+    if (title) title.textContent = '私聊';
+    if (avatarEl) avatarEl.textContent = contactName.charAt(0);
+    if (nameEl) nameEl.textContent = contactName;
+    
+    currentChatContact = { id: contactId, name: contactName };
+    renderPrivateChatMessages();
+    
+    // 聚焦输入框
+    const input = document.getElementById('chatAppInput');
+    if (input) {
+        setTimeout(() => input.focus(), 100);
+    }
+}
+
+// 渲染私聊消息
+function renderPrivateChatMessages() {
+    const container = document.getElementById('chatAppMessages');
+    if (!container || !currentChatContact) return;
+    
+    const chatKey = currentChatContact.id;
+    const history = privateChatHistory[chatKey] || [];
+    
+    if (history.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
+                <p>开始和 ${escapeHtml(currentChatContact.name)} 聊天吧！</p>
+                <small>这里的对话不会影响主剧情</small>
+            </div>
+        `;
+        return;
+    }
+    
+    const userName = chuanyueRulesData?.userName || '我';
+    
+    container.innerHTML = history.map(msg => {
+        const isUser = msg.role === 'user';
+        const avatar = isUser ? userName.charAt(0) : currentChatContact.name.charAt(0);
+        const time = msg.time ? new Date(msg.time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '';
+        
+        return `
+            <div class="chat-app-message ${isUser ? 'user' : ''}">
+                <div class="message-avatar">${avatar}</div>
+                <div>
+                    <div class="message-bubble">${escapeHtml(msg.content)}</div>
+                    ${time ? `<div class="message-time">${time}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // 滚动到底部
+    requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight;
+    });
+}
+
+// 发送私聊消息
+async function sendPrivateMessage() {
+    if (isChatAppSending || !currentChatContact) return;
+    
+    const input = document.getElementById('chatAppInput');
+    const sendBtn = document.getElementById('chatAppSendBtn');
+    if (!input) return;
+    
+    const message = input.value.trim();
+    if (!message) return;
+    
+    // 检查API配置
+    if (!apiSettings.baseUrl || !apiSettings.apiKey || !apiSettings.model) {
+        showToast('请先配置API设置');
+        return;
+    }
+    
+    isChatAppSending = true;
+    if (sendBtn) sendBtn.disabled = true;
+    
+    const chatKey = currentChatContact.id;
+    if (!privateChatHistory[chatKey]) {
+        privateChatHistory[chatKey] = [];
+    }
+    
+    // 添加用户消息
+    privateChatHistory[chatKey].push({
+        role: 'user',
+        content: message,
+        time: Date.now()
+    });
+    
+    input.value = '';
+    input.style.height = 'auto';
+    renderPrivateChatMessages();
+    savePrivateChatHistory();
+    
+    try {
+        // 获取角色信息
+        const contacts = getChatContacts();
+        const contact = contacts.find(c => c.id === currentChatContact.id);
+        const characterInfo = contact ? `
+角色名：${contact.name}
+${contact.identity ? `身份：${contact.identity}` : ''}
+${contact.personality ? `性格：${contact.personality}` : ''}
+${contact.relationship ? `与主角关系：${contact.relationship}` : ''}
+${contact.description ? `描述：${contact.description}` : ''}
+`.trim() : `角色名：${currentChatContact.name}`;
+        
+        // 构建聊天历史（只取最近10条）
+        const recentHistory = privateChatHistory[chatKey].slice(-10);
+        const messages = [
+            {
+                role: 'system',
+                content: `你现在扮演一个角色与用户私聊。这是一个独立的聊天场景，与主剧情无关。
+
+${characterInfo}
+
+要求：
+1. 完全代入角色，用角色的口吻和性格回复
+2. 回复要自然、有个性，符合角色设定
+3. 可以闲聊、调侃、撒娇等，展现角色魅力
+4. 回复简短自然，像真实聊天一样（通常1-3句话）
+5. 不要使用括号描述动作或心理，直接用对话形式`
+            },
+            ...recentHistory.map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'assistant',
+                content: msg.content
+            }))
+        ];
+        
+        const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiSettings.apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: apiSettings.model,
+                messages: messages,
+                temperature: 0.8,
+                max_tokens: 500
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('API请求失败');
+        }
+        
+        const data = await response.json();
+        const reply = data.choices[0]?.message?.content || '...';
+        
+        // 添加角色回复
+        privateChatHistory[chatKey].push({
+            role: 'assistant',
+            content: reply,
+            time: Date.now()
+        });
+        
+        renderPrivateChatMessages();
+        savePrivateChatHistory();
+        
+    } catch (error) {
+        console.error('私聊发送失败:', error);
+        showToast('发送失败，请重试');
+        // 移除失败的用户消息
+        privateChatHistory[chatKey].pop();
+        renderPrivateChatMessages();
+    } finally {
+        isChatAppSending = false;
+        if (sendBtn) sendBtn.disabled = false;
+    }
+}
+
+// 清空私聊记录
+async function clearPrivateChat() {
+    if (!currentChatContact) return;
+    
+    if (await customConfirm(`确定要清空与 ${currentChatContact.name} 的聊天记录吗？`, '清空聊天')) {
+        const chatKey = currentChatContact.id;
+        delete privateChatHistory[chatKey];
+        savePrivateChatHistory();
+        renderPrivateChatMessages();
+        showToast('聊天记录已清空');
+    }
+}
+
+// 保存私聊记录
+function savePrivateChatHistory() {
+    localStorage.setItem('privateChatHistory', JSON.stringify(privateChatHistory));
+}
+
 // Initialize
 init();
+setupChatApp();
