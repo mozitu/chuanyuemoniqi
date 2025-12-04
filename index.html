@@ -622,64 +622,115 @@
             </div>
         </div>
         
-        <!-- 通讯App模态框 -->
-        <div class="modal-overlay" id="chatAppModal">
-            <div class="modal-box chat-app-modal">
-                <div class="modal-header">
-                    <h3 id="chatAppTitle">通讯录</h3>
-                    <button class="modal-close" id="chatAppClose">
-                        <svg viewBox="0 0 28 28" fill="none">
-                            <path d="M8 8 L20 20 M20 8 L8 20" stroke="#7a6f5f" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                </div>
-                <div class="modal-body chat-app-body">
-                    <!-- 联系人列表 -->
-                    <div class="chat-app-contacts" id="chatAppContacts">
-                        <div class="contacts-header">
-                            <span>联系人</span>
-                            <small id="contactsCount">0人</small>
-                        </div>
-                        <div class="contacts-list" id="contactsList">
-                            <div class="contacts-empty">
-                                <svg viewBox="0 0 48 48" fill="none">
-                                    <circle cx="24" cy="18" r="10" stroke="#7a6f5f" stroke-width="2"/>
-                                    <path d="M8 42 C8 32 16 26 24 26 C32 26 40 32 40 42" stroke="#7a6f5f" stroke-width="2"/>
-                                </svg>
-                                <p>暂无联系人</p>
-                                <small>开始剧情后，遇到的角色会出现在这里</small>
-                            </div>
+        <!-- 通讯App全屏页面 -->
+        <div class="section chat-app-section" id="chatAppSection">
+            <div class="chat-app-page">
+                <!-- 联系人列表页 -->
+                <div class="chat-app-contacts-page" id="chatAppContactsPage">
+                    <div class="chat-app-header">
+                        <button class="chat-app-back" id="chatAppClose">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M15 18 L9 12 L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <h2 id="chatAppTitle">通讯录</h2>
+                        <div class="header-spacer"></div>
+                    </div>
+                    <div class="contacts-header">
+                        <span>联系人</span>
+                        <small id="contactsCount">0人</small>
+                    </div>
+                    <div class="contacts-list" id="contactsList">
+                        <div class="contacts-empty">
+                            <svg viewBox="0 0 48 48" fill="none">
+                                <circle cx="24" cy="18" r="10" stroke="#7a6f5f" stroke-width="2"/>
+                                <path d="M8 42 C8 32 16 26 24 26 C32 26 40 32 40 42" stroke="#7a6f5f" stroke-width="2"/>
+                            </svg>
+                            <p>暂无联系人</p>
+                            <small>开始剧情后，遇到的角色会出现在这里</small>
                         </div>
                     </div>
-                    <!-- 私聊界面 -->
-                    <div class="chat-app-chat hidden" id="chatAppChat">
-                        <div class="chat-header">
-                            <button class="chat-back-btn" id="chatAppBackBtn">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                    <path d="M15 18 L9 12 L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
-                            </button>
-                            <div class="chat-contact-info">
-                                <div class="contact-avatar" id="chatContactAvatar">角</div>
-                                <div class="contact-name" id="chatContactName">角色名</div>
-                            </div>
-                            <button class="chat-clear-btn" id="chatAppClearBtn" title="清空聊天记录">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                    <path d="M4 6 H20 M8 6 V4 H16 V6 M6 6 V20 H18 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
+                </div>
+                <!-- 私聊页面 -->
+                <div class="chat-app-chat-page hidden" id="chatAppChatPage">
+                    <div class="chat-app-header">
+                        <button class="chat-app-back" id="chatAppBackBtn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M15 18 L9 12 L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <div class="chat-contact-info">
+                            <div class="contact-avatar" id="chatContactAvatar">角</div>
+                            <div class="contact-name" id="chatContactName">角色名</div>
+                        </div>
+                        <button class="chat-summary-btn" id="chatAppSummaryBtn" title="生成对话总结">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M4 6 H20 M4 12 H16 M4 18 H12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        <button class="chat-clear-btn" id="chatAppClearBtn" title="清空聊天记录">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M4 6 H20 M8 6 V4 H16 V6 M6 6 V20 H18 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="chat-messages-container" id="chatAppMessages">
+                        <!-- 私聊消息 -->
+                    </div>
+                    <!-- 表情选择面板 -->
+                    <div class="sticker-panel hidden" id="stickerPanel">
+                        <div class="sticker-panel-header">
+                            <span>表情库</span>
+                            <button class="sticker-manage-btn" id="stickerManageBtn" title="管理表情">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M12 15 A3 3 0 0 1 9 12 A3 3 0 0 1 12 9 A3 3 0 0 1 15 12 A3 3 0 0 1 12 15 M19.4 15 A1.65 1.65 0 0 0 19.73 16.26 L18.26 17.79 A2 2 0 0 1 16.34 18.26 A1.65 1.65 0 0 0 15 17.5 A1.65 1.65 0 0 0 13.66 18.25 A2 2 0 0 1 11.74 17.78 L10.27 16.26 A1.65 1.65 0 0 0 10.61 15 A1.65 1.65 0 0 0 9.86 13.66 A2 2 0 0 1 9.39 11.74 L9.39 9.87 A2 2 0 0 1 9.87 7.94 A1.65 1.65 0 0 0 10.61 6.66 A1.65 1.65 0 0 0 10.27 5.39 L11.74 3.87 A2 2 0 0 1 13.66 3.4 A1.65 1.65 0 0 0 15 4.16 A1.65 1.65 0 0 0 16.34 3.41 A2 2 0 0 1 18.26 3.88 L19.73 5.4 A1.65 1.65 0 0 0 19.4 6.66 A1.65 1.65 0 0 0 20.14 8 A2 2 0 0 1 20.61 9.87 L20.61 11.74 A2 2 0 0 1 20.14 13.66 A1.65 1.65 0 0 0 19.4 15" stroke="currentColor" stroke-width="2"/></svg>
                             </button>
                         </div>
-                        <div class="chat-messages-container" id="chatAppMessages">
-                            <!-- 私聊消息 -->
+                        <div class="sticker-grid" id="stickerGrid">
+                            <!-- 表情将在这里显示 -->
                         </div>
-                        <div class="chat-input-container">
-                            <textarea class="chat-input" id="chatAppInput" placeholder="输入消息..." rows="1"></textarea>
-                            <button class="chat-send-btn" id="chatAppSendBtn">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                    <path d="M22 2 L11 13 M22 2 L15 22 L11 13 L2 9 Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </button>
+                        <div class="sticker-empty" id="stickerEmpty">
+                            <p>暂无表情</p>
+                            <small>点击右上角管理添加表情</small>
                         </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <button class="chat-sticker-btn" id="chatStickerBtn" title="表情">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 14 Q12 18 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="9" cy="9" r="1.5" fill="currentColor"/>
+                                <circle cx="15" cy="9" r="1.5" fill="currentColor"/>
+                            </svg>
+                        </button>
+                        <textarea class="chat-input" id="chatAppInput" placeholder="输入消息..." rows="1"></textarea>
+                        <button class="chat-send-btn" id="chatAppSendBtn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M22 2 L11 13 M22 2 L15 22 L11 13 L2 9 Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 表情管理模态框 -->
+        <div class="modal" id="stickerModal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>管理表情库</h3>
+                    <button class="modal-close" id="stickerModalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="sticker-upload-area" id="stickerUploadArea">
+                        <svg viewBox="0 0 24 24" fill="none" width="48" height="48">
+                            <path d="M12 5 V19 M5 12 H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <p>点击或拖拽上传表情</p>
+                        <small>支持图片(PNG/JPG/GIF)或文本文件(名称: URL格式)</small>
+                        <input type="file" id="stickerFileInput" accept="image/*,.txt,.text" multiple hidden>
+                    </div>
+                    <div class="sticker-list" id="stickerManageList">
+                        <!-- 表情管理列表 -->
                     </div>
                 </div>
             </div>
@@ -1286,10 +1337,10 @@
                                 <option value="other">其他</option>
                             </select>
                         </div>
-                        <div class="form-item form-item-half">
-                            <label class="form-label">性格偏好</label>
-                            <input type="text" class="form-input" id="userPersonality" placeholder="如：温柔、冷静、活泼">
-                        </div>
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label">生成偏好</label>
+                        <textarea class="form-textarea" id="userPreference" rows="3" placeholder="填写你对世界、角色、剧情的偏好，AI会参考这些生成内容。例如：喜欢古风仙侠、希望有强大的金手指、偏好温柔型男主、喜欢虐恋情节等"></textarea>
                     </div>
                     <div class="form-divider"></div>
                 </div>

@@ -781,8 +781,8 @@ function restorePageState() {
         renderPlayerStatus();
         renderCharactersList();
         
-        // 恢复聊天界面和消息（如果已开始游戏）
-        if (isChuanyueStarted && chatHistory.length > 0) {
+        // 恢复聊天界面（如果已开始游戏）
+        if (isChuanyueStarted) {
             showChatInterface();
         }
     }
@@ -3861,7 +3861,7 @@ function openChuanyueRulesModal() {
             document.getElementById('userName').value = chuanyueRulesData.userName || '';
             document.getElementById('userAge').value = chuanyueRulesData.userAge || '';
             document.getElementById('userGender').value = chuanyueRulesData.userGender || '';
-            document.getElementById('userPersonality').value = chuanyueRulesData.userPersonality || '';
+            document.getElementById('userPreference').value = chuanyueRulesData.userPreference || '';
         }
         
         genderSettingBtns.forEach(btn => {
@@ -3882,7 +3882,7 @@ function openChuanyueRulesModal() {
             document.getElementById('userName').value = '';
             document.getElementById('userAge').value = '';
             document.getElementById('userGender').value = '';
-            document.getElementById('userPersonality').value = '';
+            document.getElementById('userPreference').value = '';
         }
         
         genderSettingBtns.forEach(btn => {
@@ -3914,14 +3914,14 @@ function confirmChuanyue() {
         const userName = document.getElementById('userName').value.trim();
         const userAge = document.getElementById('userAge').value.trim();
         const userGender = document.getElementById('userGender').value;
-        const userPersonality = document.getElementById('userPersonality').value.trim();
+        const userPreference = document.getElementById('userPreference').value.trim();
         
         if (!userName) {
             showToast('请填写姓名');
             return;
         }
         
-        basicInfo = { userName, userAge, userGender, userPersonality };
+        basicInfo = { userName, userAge, userGender, userPreference };
     }
 
     // Validate for kuaichuan mode
@@ -4297,8 +4297,8 @@ function refreshModeUI() {
     renderPlayerStatus();
     renderCharactersList();
     
-    // 处理聊天界面
-    if (isChuanyueStarted && chatHistory.length > 0) {
+    // 处理聊天界面（只要已开始就显示聊天界面）
+    if (isChuanyueStarted) {
         showChatInterface();
     } else {
         hideChatInterface();
@@ -4584,7 +4584,7 @@ function renderTransChar() {
                 <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z" stroke="currentColor" stroke-width="2"/></svg>
                 身份
             </div>
-            <div class="world-info-section-content">${escapeHtml(transCharData.name)}</div>
+            <div class="world-info-section-content">${escapeHtml(transCharData.name)}${transCharData.gender ? ` (${escapeHtml(transCharData.gender)})` : ''}</div>
         </div>`;
     }
     
@@ -4663,6 +4663,10 @@ async function generateTransChar() {
     }
 
     const refreshBtn = document.getElementById('refreshTransCharBtn');
+    if (!refreshBtn) {
+        showToast('刷新按钮不存在');
+        return;
+    }
     const originalHTML = refreshBtn.innerHTML;
     refreshBtn.disabled = true;
     refreshBtn.innerHTML = '<div class="loading-spinner"></div>';
@@ -4675,16 +4679,27 @@ async function generateTransChar() {
             'wuxianliu': '无限流'
         };
         
+        // 确定用户性别
+        const genderMap = { 'male': '男性', 'female': '女性', 'other': '双性' };
+        let userGender = chuanyueRulesData?.confirmedGender || chuanyueRulesData?.userGender || 'male';
+        let genderText = genderMap[userGender] || '男性';
+        
+        // 性别要求说明
+        let genderRequirement = '';
+        if (userGender === 'male') {
+            genderRequirement = `【强制要求】角色必须是男性，且在感情关系中是"受"的角色定位（被追求、被攻略的一方）。`;
+        } else if (userGender === 'other') {
+            genderRequirement = `【强制要求】角色是双性体质（同时拥有男女特征），在感情关系中是"受"的角色定位（被追求、被攻略的一方）。`;
+        } else {
+            genderRequirement = `【强制要求】角色必须是女性。`;
+        }
+        
         let contextInfo = '';
-        if (characterProfile) {
+        if (chuanyueRulesData?.userName) {
             contextInfo += `用户原本信息：\n`;
-            if (characterProfile.name) contextInfo += `- 名字：${characterProfile.name}\n`;
-            if (characterProfile.age) contextInfo += `- 年龄：${characterProfile.age}岁\n`;
-            if (characterProfile.gender) {
-                const genderMap = { 'male': '男', 'female': '女', 'other': '其他' };
-                contextInfo += `- 性别：${genderMap[characterProfile.gender] || characterProfile.gender}\n`;
-            }
-            if (characterProfile.personality) contextInfo += `- 性格：${characterProfile.personality}\n`;
+            contextInfo += `- 名字：${chuanyueRulesData.userName}\n`;
+            if (chuanyueRulesData.userAge) contextInfo += `- 年龄：${chuanyueRulesData.userAge}岁\n`;
+            contextInfo += `- 性别：${genderText}（必须遵守）\n`;
         }
         
         // 快穿模式使用选中的世界背景
@@ -4701,6 +4716,11 @@ async function generateTransChar() {
         if (chuanyueRulesData?.rules) {
             contextInfo += `\n规则：${chuanyueRulesData.rules}\n`;
         }
+        if (chuanyueRulesData?.userPreference) {
+            contextInfo += `\n用户生成偏好：${chuanyueRulesData.userPreference}\n`;
+        }
+        
+        contextInfo += `\n${genderRequirement}\n`;
         
         const identityType = gameMode === 'kuaichuan' ? '本世界身份' : '穿越后身份';
 
@@ -4726,6 +4746,7 @@ ${contextInfo}
 请按以下JSON格式返回（直接返回JSON，不要其他内容）：
 {
     "name": "${gameMode === 'kuaichuan' ? '本世界的身份名称' : '穿越后的身份名称'}",
+    "gender": "${genderText}",
     "background": "角色背景故事（100字以内）",
     "situation": "当前处境（50字以内）",
     "ability": "特殊能力或金手指（如果有的话）",
@@ -4733,10 +4754,11 @@ ${contextInfo}
 }
 
 要求：
-1. 根据${gameMode === 'kuaichuan' ? '当前世界和任务' : '世界背景和用户信息'}创造合适的身份
-2. 身份要有戏剧性和故事潜力
-3. 处境要有冲突或挑战
-4. ${gameMode === 'kuaichuan' ? '身份要与世界设定和任务相关' : '金手指不宜过于强大'}`
+1. 【最重要】严格按照指定性别(${genderText})生成，绝对不能更改性别！${userGender !== 'female' ? '角色在感情中必须是"受"的定位！' : ''}
+2. 根据${gameMode === 'kuaichuan' ? '当前世界和任务' : '世界背景和用户信息'}创造合适的身份
+3. 身份要有戏剧性和故事潜力
+4. 处境要有冲突或挑战
+5. ${gameMode === 'kuaichuan' ? '身份要与世界设定和任务相关' : '金手指不宜过于强大'}`
                 }],
                 temperature: 0.8
             })
@@ -4751,6 +4773,10 @@ ${contextInfo}
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             transCharData = JSON.parse(jsonMatch[0]);
+            
+            // 强制修正性别（确保与用户选择一致）
+            transCharData.gender = genderText;
+            
             transCharGenerated = true;
             
             localStorage.setItem(getStorageKey('transCharData'), JSON.stringify(transCharData));
@@ -4766,8 +4792,10 @@ ${contextInfo}
         console.error('Generate trans char error:', error);
         showToast('生成失败: ' + error.message);
     } finally {
-        refreshBtn.disabled = transCharGenerated;
-        refreshBtn.innerHTML = originalHTML;
+        if (refreshBtn) {
+            refreshBtn.disabled = transCharGenerated;
+            refreshBtn.innerHTML = originalHTML;
+        }
     }
 }
 
@@ -4794,7 +4822,7 @@ async function autoGenerateTransChar() {
                 const genderMap = { 'male': '男', 'female': '女', 'other': '其他' };
                 contextInfo += `- 性别：${genderMap[chuanyueRulesData.userGender] || chuanyueRulesData.userGender}\n`;
             }
-            if (chuanyueRulesData.userPersonality) contextInfo += `- 性格偏好：${chuanyueRulesData.userPersonality}\n`;
+            if (chuanyueRulesData.userPreference) contextInfo += `- 生成偏好：${chuanyueRulesData.userPreference}\n`;
         }
         
         if (chuanyueRulesData?.settings) {
@@ -4898,6 +4926,10 @@ async function generateWorldBuilding() {
     }
 
     const refreshBtn = document.getElementById('refreshWorldBuilding');
+    if (!refreshBtn) {
+        showToast('刷新按钮不存在');
+        return;
+    }
     const originalHTML = refreshBtn.innerHTML;
     refreshBtn.disabled = true;
     refreshBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" class="spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="30 70"/></svg>';
@@ -4925,6 +4957,11 @@ async function generateWorldBuilding() {
             }
         } else {
             worldBackground = chuanyueRulesData?.settings || '';
+        }
+        
+        // 添加用户生成偏好
+        if (chuanyueRulesData?.userPreference) {
+            worldBackground += `\n\n【用户生成偏好】${chuanyueRulesData.userPreference}`;
         }
         
         const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
@@ -5016,6 +5053,10 @@ ${worldBackground}
             // 生成重要人物
             showToast('正在生成重要人物...');
             await generateImportantCharacters();
+            
+            // 成功后恢复按钮状态
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = originalHTML;
         } else {
             throw new Error('解析失败');
         }
@@ -5023,8 +5064,12 @@ ${worldBackground}
     } catch (error) {
         console.error('Generate world building error:', error);
         showToast('生成失败: ' + error.message);
-        refreshBtn.disabled = false;
-        refreshBtn.innerHTML = originalHTML;
+    } finally {
+        // 确保按钮状态总是被恢复
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = originalHTML;
+        }
     }
 }
 
@@ -5049,11 +5094,13 @@ async function generateImportantCharacters() {
 
 世界背景：${worldInfo}
 详细设定：${worldBuilding}
+${chuanyueRulesData?.userPreference ? `用户偏好：${chuanyueRulesData.userPreference}` : ''}
 
 生成的人物应包含：
 - 可攻略的恋爱对象（2-3人）
 - 重要配角（导师、对手、朋友等）
 - 反派或敌对角色（1-2人）
+${chuanyueRulesData?.userPreference ? '- 请参考用户偏好来设计角色类型和特点' : ''}
 
 返回JSON格式：
 {
@@ -8364,8 +8411,8 @@ async function generateAIContent() {
         return;
     }
     
-    if (chatHistory.length === 0) {
-        showToast('请先发送消息');
+    if (!isChuanyueStarted) {
+        showToast('请先开始游戏');
         return;
     }
 
@@ -8386,14 +8433,22 @@ async function generateAIContent() {
             });
         }
         
-        // Add chat history (last 15 messages)
-        const recentHistory = chatHistory.slice(-15);
-        recentHistory.forEach(msg => {
+        // 如果聊天记录为空，添加初始提示
+        if (chatHistory.length === 0) {
             messages.push({
-                role: msg.type === 'user' ? 'user' : 'assistant',
-                content: msg.content
+                role: 'user',
+                content: '开始故事，描述穿越后醒来的场景。'
             });
-        });
+        } else {
+            // Add chat history (last 15 messages)
+            const recentHistory = chatHistory.slice(-15);
+            recentHistory.forEach(msg => {
+                messages.push({
+                    role: msg.type === 'user' ? 'user' : 'assistant',
+                    content: msg.content
+                });
+            });
+        }
 
         const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
             method: 'POST',
@@ -8863,16 +8918,27 @@ function renderChatHistory() {
 
 // 私聊记录存储（独立于主剧情）
 let privateChatHistory = JSON.parse(localStorage.getItem('privateChatHistory') || '{}');
+// 总结结构: { chatKey: { summaries: [], masterSummary: '' } }
+let privateChatSummary = JSON.parse(localStorage.getItem('privateChatSummary') || '{}');
+let privateChatLastSummaryAt = JSON.parse(localStorage.getItem('privateChatLastSummaryAt') || '{}');
 let currentChatContact = null;
 let isChatAppSending = false;
+
+// 表情库存储
+let stickerLibrary = JSON.parse(localStorage.getItem('stickerLibrary') || '[]');
+
+// 保存表情库
+function saveStickerLibrary() {
+    localStorage.setItem('stickerLibrary', JSON.stringify(stickerLibrary));
+}
 
 // 初始化通讯App
 function setupChatApp() {
     const chatAppCard = document.getElementById('chatAppCard');
-    const chatAppModal = document.getElementById('chatAppModal');
     const chatAppClose = document.getElementById('chatAppClose');
     const chatAppBackBtn = document.getElementById('chatAppBackBtn');
     const chatAppClearBtn = document.getElementById('chatAppClearBtn');
+    const chatAppSummaryBtn = document.getElementById('chatAppSummaryBtn');
     const chatAppSendBtn = document.getElementById('chatAppSendBtn');
     const chatAppInput = document.getElementById('chatAppInput');
     
@@ -8881,14 +8947,9 @@ function setupChatApp() {
     // 打开通讯App
     chatAppCard.addEventListener('click', openChatApp);
     
-    // 关闭模态框
+    // 返回其他页面
     if (chatAppClose) {
         chatAppClose.addEventListener('click', closeChatApp);
-    }
-    if (chatAppModal) {
-        chatAppModal.addEventListener('click', (e) => {
-            if (e.target === chatAppModal) closeChatApp();
-        });
     }
     
     // 返回联系人列表
@@ -8898,7 +8959,20 @@ function setupChatApp() {
     
     // 清空聊天记录
     if (chatAppClearBtn) {
-        chatAppClearBtn.addEventListener('click', clearPrivateChat);
+        chatAppClearBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            clearPrivateChat();
+        });
+    }
+    
+    // 查看/生成总结
+    if (chatAppSummaryBtn) {
+        chatAppSummaryBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            showSummaryPanel();
+        });
     }
     
     // 发送消息
@@ -8921,35 +8995,110 @@ function setupChatApp() {
             chatAppInput.style.height = Math.min(chatAppInput.scrollHeight, 100) + 'px';
         });
     }
+    
+    // 表情相关
+    const stickerBtn = document.getElementById('chatStickerBtn');
+    const stickerPanel = document.getElementById('stickerPanel');
+    const stickerManageBtn = document.getElementById('stickerManageBtn');
+    const stickerModal = document.getElementById('stickerModal');
+    const stickerModalClose = document.getElementById('stickerModalClose');
+    const stickerUploadArea = document.getElementById('stickerUploadArea');
+    const stickerFileInput = document.getElementById('stickerFileInput');
+    
+    // 切换表情面板
+    if (stickerBtn) {
+        stickerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            stickerPanel?.classList.toggle('hidden');
+            renderStickerGrid();
+        });
+    }
+    
+    // 管理表情
+    if (stickerManageBtn) {
+        stickerManageBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            stickerPanel?.classList.add('hidden');
+            openStickerModal();
+        });
+    }
+    
+    // 关闭表情管理模态框
+    if (stickerModalClose) {
+        stickerModalClose.addEventListener('click', closeStickerModal);
+    }
+    if (stickerModal) {
+        stickerModal.addEventListener('click', (e) => {
+            if (e.target === stickerModal) closeStickerModal();
+        });
+    }
+    
+    // 上传表情
+    if (stickerUploadArea) {
+        stickerUploadArea.addEventListener('click', () => stickerFileInput?.click());
+        stickerUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            stickerUploadArea.style.borderColor = 'var(--gold)';
+        });
+        stickerUploadArea.addEventListener('dragleave', () => {
+            stickerUploadArea.style.borderColor = '';
+        });
+        stickerUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            stickerUploadArea.style.borderColor = '';
+            handleStickerFiles(e.dataTransfer.files);
+        });
+    }
+    
+    if (stickerFileInput) {
+        stickerFileInput.addEventListener('change', (e) => {
+            handleStickerFiles(e.target.files);
+            e.target.value = '';
+        });
+    }
+    
+    // 点击其他地方关闭表情面板
+    document.addEventListener('click', (e) => {
+        if (stickerPanel && !stickerPanel.classList.contains('hidden')) {
+            if (!stickerPanel.contains(e.target) && e.target !== stickerBtn && !stickerBtn?.contains(e.target)) {
+                stickerPanel.classList.add('hidden');
+            }
+        }
+    });
 }
 
-// 打开通讯App
+// 打开通讯App（全屏页面）
 function openChatApp() {
-    const modal = document.getElementById('chatAppModal');
-    if (modal) {
-        modal.classList.add('active');
+    // 隐藏其他区域，显示通讯App
+    document.getElementById('mainSection').classList.remove('active');
+    document.getElementById('othersSection').classList.remove('active');
+    const chatAppSection = document.getElementById('chatAppSection');
+    if (chatAppSection) {
+        chatAppSection.classList.add('active');
         showContactsList();
         renderContactsList();
     }
 }
 
-// 关闭通讯App
+// 关闭通讯App（返回其他页面）
 function closeChatApp() {
-    const modal = document.getElementById('chatAppModal');
-    if (modal) {
-        modal.classList.remove('active');
+    const chatAppSection = document.getElementById('chatAppSection');
+    if (chatAppSection) {
+        chatAppSection.classList.remove('active');
     }
+    // 返回其他页面
+    document.getElementById('othersSection').classList.add('active');
     currentChatContact = null;
 }
 
 // 显示联系人列表
 function showContactsList() {
-    const contactsView = document.getElementById('chatAppContacts');
-    const chatView = document.getElementById('chatAppChat');
+    const contactsPage = document.getElementById('chatAppContactsPage');
+    const chatPage = document.getElementById('chatAppChatPage');
     const title = document.getElementById('chatAppTitle');
     
-    if (contactsView) contactsView.classList.remove('hidden');
-    if (chatView) chatView.classList.add('hidden');
+    if (contactsPage) contactsPage.classList.remove('hidden');
+    if (chatPage) chatPage.classList.add('hidden');
     if (title) title.textContent = '通讯录';
     
     currentChatContact = null;
@@ -9026,15 +9175,13 @@ function renderContactsList() {
 
 // 打开私聊界面
 function openPrivateChat(contactId, contactName) {
-    const contactsView = document.getElementById('chatAppContacts');
-    const chatView = document.getElementById('chatAppChat');
-    const title = document.getElementById('chatAppTitle');
+    const contactsPage = document.getElementById('chatAppContactsPage');
+    const chatPage = document.getElementById('chatAppChatPage');
     const avatarEl = document.getElementById('chatContactAvatar');
     const nameEl = document.getElementById('chatContactName');
     
-    if (contactsView) contactsView.classList.add('hidden');
-    if (chatView) chatView.classList.remove('hidden');
-    if (title) title.textContent = '私聊';
+    if (contactsPage) contactsPage.classList.add('hidden');
+    if (chatPage) chatPage.classList.remove('hidden');
     if (avatarEl) avatarEl.textContent = contactName.charAt(0);
     if (nameEl) nameEl.textContent = contactName;
     
@@ -9073,16 +9220,46 @@ function renderPrivateChatMessages() {
         const avatar = isUser ? userName.charAt(0) : currentChatContact.name.charAt(0);
         const time = msg.time ? new Date(msg.time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '';
         
+        // 检查是否是表情消息
+        let messageContent = '';
+        if (msg.sticker) {
+            // 用户发送的表情
+            messageContent = `<div class="sticker-message"><img src="${msg.sticker}" alt="表情"></div>`;
+        } else {
+            // 检查内容中是否有表情标记（AI发送的）
+            const content = msg.content || '';
+            const stickerMatch = content.match(/\[表情:(.+?)\]/);
+            if (stickerMatch) {
+                const stickerName = stickerMatch[1];
+                const sticker = stickerLibrary.find(s => s.name === stickerName);
+                if (sticker) {
+                    // 替换表情标记为图片
+                    const textPart = content.replace(/\[表情:.+?\]/g, '').trim();
+                    messageContent = sticker ? `<div class="sticker-message"><img src="${sticker.url}" alt="${stickerName}"></div>` : '';
+                    if (textPart) {
+                        messageContent = `<div class="message-bubble">${escapeHtml(textPart)}</div>` + messageContent;
+                    }
+                } else {
+                    messageContent = `<div class="message-bubble">${escapeHtml(content)}</div>`;
+                }
+            } else {
+                messageContent = `<div class="message-bubble">${escapeHtml(content)}</div>`;
+            }
+        }
+        
         return `
-            <div class="chat-app-message ${isUser ? 'user' : ''}">
+            <div class="chat-app-message ${isUser ? 'user' : ''}" data-index="${history.indexOf(msg)}" data-role="${msg.role}">
                 <div class="message-avatar">${avatar}</div>
-                <div>
-                    <div class="message-bubble">${escapeHtml(msg.content)}</div>
+                <div class="message-content-wrapper">
+                    ${messageContent}
                     ${time ? `<div class="message-time">${time}</div>` : ''}
                 </div>
             </div>
         `;
     }).join('');
+    
+    // 绑定长按事件
+    bindMessageLongPress(container);
     
     // 滚动到底部
     requestAnimationFrame(() => {
@@ -9127,6 +9304,9 @@ async function sendPrivateMessage() {
     renderPrivateChatMessages();
     savePrivateChatHistory();
     
+    // 显示正在输入状态
+    showChatTypingIndicator();
+    
     try {
         // 获取角色信息
         const contacts = getChatContacts();
@@ -9139,21 +9319,44 @@ ${contact.relationship ? `与主角关系：${contact.relationship}` : ''}
 ${contact.description ? `描述：${contact.description}` : ''}
 `.trim() : `角色名：${currentChatContact.name}`;
         
-        // 构建聊天历史（只取最近10条）
-        const recentHistory = privateChatHistory[chatKey].slice(-10);
+        // 获取当前剧情上下文（主剧情摘要和状态）
+        let storyContext = '';
+        if (storySummary) {
+            storyContext += `【当前剧情进度】\n${storySummary}\n\n`;
+        }
+        if (chatStatus) {
+            storyContext += `【当前状态】时间：${chatStatus.time || '未知'}，地点：${chatStatus.location || '未知'}\n\n`;
+        }
+        
+        // 获取私聊总结
+        const summaryData = getSummaryData(chatKey);
+        let chatSummary = '';
+        if (summaryData.masterSummary) {
+            chatSummary = summaryData.masterSummary;
+        } else if (summaryData.summaries.length > 0) {
+            chatSummary = summaryData.summaries.map(s => s.text).join('\n');
+        }
+        
+        // 构建聊天历史（取最近40条）
+        const recentHistory = privateChatHistory[chatKey].slice(-40);
+        const stickerInfo = getStickerLibraryDescription();
         const messages = [
             {
                 role: 'system',
-                content: `你现在扮演一个角色与用户私聊。这是一个独立的聊天场景，与主剧情无关。
+                content: `你现在扮演一个角色与用户私聊。这是一个独立的聊天场景，聊天内容不会影响主剧情。
 
 ${characterInfo}
+
+${storyContext ? `【剧情背景参考】\n${storyContext}` : ''}
+${chatSummary ? `【之前的聊天总结】\n${chatSummary}\n` : ''}
 
 要求：
 1. 完全代入角色，用角色的口吻和性格回复
 2. 回复要自然、有个性，符合角色设定
 3. 可以闲聊、调侃、撒娇等，展现角色魅力
 4. 回复简短自然，像真实聊天一样（通常1-3句话）
-5. 不要使用括号描述动作或心理，直接用对话形式`
+5. 不要使用括号描述动作或心理，直接用对话形式
+6. 可以参考剧情背景来增加话题的关联性${stickerInfo}`
             },
             ...recentHistory.map(msg => ({
                 role: msg.role === 'user' ? 'user' : 'assistant',
@@ -9170,8 +9373,7 @@ ${characterInfo}
             body: JSON.stringify({
                 model: apiSettings.model,
                 messages: messages,
-                temperature: 0.8,
-                max_tokens: 500
+                temperature: 0.8
             })
         });
         
@@ -9181,6 +9383,9 @@ ${characterInfo}
         
         const data = await response.json();
         const reply = data.choices[0]?.message?.content || '...';
+        
+        // 隐藏正在输入状态
+        hideChatTypingIndicator();
         
         // 添加角色回复
         privateChatHistory[chatKey].push({
@@ -9192,6 +9397,9 @@ ${characterInfo}
         renderPrivateChatMessages();
         savePrivateChatHistory();
         
+        // 检查是否需要自动总结（每30条）
+        checkPrivateChatAutoSummary(chatKey);
+        
     } catch (error) {
         console.error('私聊发送失败:', error);
         showToast('发送失败，请重试');
@@ -9199,6 +9407,7 @@ ${characterInfo}
         privateChatHistory[chatKey].pop();
         renderPrivateChatMessages();
     } finally {
+        hideChatTypingIndicator();
         isChatAppSending = false;
         if (sendBtn) sendBtn.disabled = false;
     }
@@ -9211,6 +9420,8 @@ async function clearPrivateChat() {
     if (await customConfirm(`确定要清空与 ${currentChatContact.name} 的聊天记录吗？`, '清空聊天')) {
         const chatKey = currentChatContact.id;
         delete privateChatHistory[chatKey];
+        delete privateChatSummary[chatKey];
+        delete privateChatLastSummaryAt[chatKey];
         savePrivateChatHistory();
         renderPrivateChatMessages();
         showToast('聊天记录已清空');
@@ -9220,6 +9431,714 @@ async function clearPrivateChat() {
 // 保存私聊记录
 function savePrivateChatHistory() {
     localStorage.setItem('privateChatHistory', JSON.stringify(privateChatHistory));
+    localStorage.setItem('privateChatSummary', JSON.stringify(privateChatSummary));
+    localStorage.setItem('privateChatLastSummaryAt', JSON.stringify(privateChatLastSummaryAt));
+}
+
+// 检查是否需要自动总结（每30条）
+function checkPrivateChatAutoSummary(chatKey) {
+    const history = privateChatHistory[chatKey] || [];
+    const lastSummaryAt = privateChatLastSummaryAt[chatKey] || 0;
+    
+    // 每30条消息自动总结一次
+    if (history.length - lastSummaryAt >= 30) {
+        generatePrivateChatSummary(true); // 自动模式，不显示Toast
+    }
+}
+
+// 获取总结数据结构
+function getSummaryData(chatKey) {
+    if (!privateChatSummary[chatKey] || typeof privateChatSummary[chatKey] === 'string') {
+        // 迁移旧数据格式
+        const oldSummary = typeof privateChatSummary[chatKey] === 'string' ? privateChatSummary[chatKey] : '';
+        privateChatSummary[chatKey] = {
+            summaries: oldSummary ? [{ text: oldSummary, time: Date.now() }] : [],
+            masterSummary: ''
+        };
+    }
+    return privateChatSummary[chatKey];
+}
+
+// 生成私聊总结
+async function generatePrivateChatSummary(isAuto = false) {
+    if (!currentChatContact) return;
+    
+    const chatKey = currentChatContact.id;
+    const history = privateChatHistory[chatKey] || [];
+    
+    if (history.length < 5) {
+        if (!isAuto) showToast('聊天记录太少，无需总结');
+        return;
+    }
+    
+    // 优先使用备用API，没有则使用主API
+    let apiUrl, apiKey, model;
+    if (apiSettings.backupBaseUrl && apiSettings.backupApiKey && apiSettings.backupModel) {
+        apiUrl = apiSettings.backupBaseUrl;
+        apiKey = apiSettings.backupApiKey;
+        model = apiSettings.backupModel;
+    } else if (apiSettings.baseUrl && apiSettings.apiKey && apiSettings.model) {
+        apiUrl = apiSettings.baseUrl;
+        apiKey = apiSettings.apiKey;
+        model = apiSettings.model;
+    } else {
+        if (!isAuto) showToast('请先配置API设置');
+        return;
+    }
+    
+    if (!isAuto) showToast('正在生成总结...');
+    
+    try {
+        // 获取需要总结的消息
+        const lastSummaryAt = privateChatLastSummaryAt[chatKey] || 0;
+        const newMessages = history.slice(lastSummaryAt);
+        
+        if (newMessages.length < 5) {
+            if (!isAuto) showToast('新消息太少，无需总结');
+            return;
+        }
+        
+        const chatContent = newMessages.map(msg => 
+            `${msg.role === 'user' ? '用户' : currentChatContact.name}：${msg.content}`
+        ).join('\n');
+        
+        const response = await fetch(apiUrl.replace(/\/$/, '') + '/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: model,
+                messages: [
+                    {
+                        role: 'system',
+                        content: '你是一个对话总结助手。请简洁地总结对话内容，保留关键信息。'
+                    },
+                    {
+                        role: 'user',
+                        content: `请总结以下与"${currentChatContact.name}"的私聊内容（50-100字）：
+
+${chatContent}
+
+直接返回总结，不要加标题或序号。`
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 300
+            })
+        });
+        
+        if (!response.ok) throw new Error('API请求失败');
+        
+        const data = await response.json();
+        const summary = data.choices[0]?.message?.content || '';
+        
+        if (summary) {
+            const summaryData = getSummaryData(chatKey);
+            summaryData.summaries.push({
+                text: summary.trim(),
+                time: Date.now(),
+                msgRange: [lastSummaryAt, history.length]
+            });
+            privateChatLastSummaryAt[chatKey] = history.length;
+            savePrivateChatHistory();
+            
+            if (!isAuto) showToast(`总结 ${summaryData.summaries.length}/10`);
+            
+            // 检查是否需要生成大总结
+            if (summaryData.summaries.length >= 10) {
+                await generateMasterSummary(chatKey, apiUrl, apiKey, model);
+            }
+        }
+        
+    } catch (error) {
+        console.error('生成私聊总结失败:', error);
+        if (!isAuto) showToast('总结生成失败');
+    }
+}
+
+// 生成大总结（合并10个小总结）
+async function generateMasterSummary(chatKey, apiUrl, apiKey, model) {
+    const summaryData = getSummaryData(chatKey);
+    if (summaryData.summaries.length < 10) return;
+    
+    showToast('正在生成综合总结...');
+    
+    try {
+        const allSummaries = summaryData.summaries.map((s, i) => `[${i + 1}] ${s.text}`).join('\n\n');
+        const previousMaster = summaryData.masterSummary || '';
+        
+        const response = await fetch(apiUrl.replace(/\/$/, '') + '/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: model,
+                messages: [
+                    {
+                        role: 'system',
+                        content: '你是一个对话总结助手。请将多个小总结合并成一个完整的综合总结。'
+                    },
+                    {
+                        role: 'user',
+                        content: `请将以下10个对话总结合并成一个综合总结（200-300字）：
+
+${previousMaster ? `【之前的综合总结】\n${previousMaster}\n\n` : ''}【新的10个总结】
+${allSummaries}
+
+请综合上述内容，生成一个完整的关系发展总结，包含：
+1. 双方互动的主要话题和事件
+2. 关系的发展变化
+3. 重要的情感节点
+
+直接返回总结内容。`
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 600
+            })
+        });
+        
+        if (!response.ok) throw new Error('API请求失败');
+        
+        const data = await response.json();
+        const masterSummary = data.choices[0]?.message?.content || '';
+        
+        if (masterSummary) {
+            summaryData.masterSummary = masterSummary.trim();
+            summaryData.summaries = []; // 清空小总结
+            savePrivateChatHistory();
+            showToast('综合总结生成完成！');
+        }
+        
+    } catch (error) {
+        console.error('生成综合总结失败:', error);
+        showToast('综合总结生成失败');
+    }
+}
+
+// 显示总结面板
+function showSummaryPanel() {
+    if (!currentChatContact) return;
+    
+    const chatKey = currentChatContact.id;
+    const summaryData = getSummaryData(chatKey);
+    
+    // 创建模态框
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'summaryModal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>📝 与 ${escapeHtml(currentChatContact.name)} 的聊天总结</h3>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+            </div>
+            <div class="modal-body">
+                ${summaryData.masterSummary ? `
+                    <div class="summary-section master">
+                        <div class="summary-section-title">📚 综合总结</div>
+                        <div class="summary-content">${escapeHtml(summaryData.masterSummary)}</div>
+                    </div>
+                ` : ''}
+                
+                <div class="summary-section">
+                    <div class="summary-section-title">
+                        📋 阶段总结 
+                        <span class="summary-count">${summaryData.summaries.length}/10</span>
+                    </div>
+                    <div class="summary-items-container">
+                        ${summaryData.summaries.length > 0 ? 
+                            summaryData.summaries.map((s, i) => `
+                                <div class="summary-item">
+                                    <div class="summary-item-header">
+                                        <span class="summary-num">#${i + 1}</span>
+                                        <span class="summary-time">${new Date(s.time).toLocaleDateString()}</span>
+                                    </div>
+                                    <div class="summary-item-text">${escapeHtml(s.text)}</div>
+                                </div>
+                            `).join('') 
+                            : '<div class="summary-empty">暂无阶段总结</div>'
+                        }
+                    </div>
+                </div>
+                
+                <div class="summary-tip">
+                    💡 每次生成会添加一个阶段总结，累积10个后自动合并为综合总结
+                </div>
+                
+                <button class="summary-generate-btn" id="generateSummaryBtn">
+                    ✨ 生成新的阶段总结
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 生成按钮
+    modal.querySelector('#generateSummaryBtn').addEventListener('click', async () => {
+        const btn = modal.querySelector('#generateSummaryBtn');
+        btn.disabled = true;
+        btn.textContent = '生成中...';
+        await generatePrivateChatSummary(false);
+        modal.remove();
+        // 重新打开以刷新内容
+        setTimeout(() => showSummaryPanel(), 300);
+    });
+    
+    // 点击背景关闭
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+// 显示正在输入状态
+function showChatTypingIndicator() {
+    const nameEl = document.getElementById('chatContactName');
+    if (nameEl && currentChatContact) {
+        nameEl.classList.add('typing');
+        nameEl.setAttribute('data-original-name', nameEl.textContent);
+        nameEl.textContent = `${currentChatContact.name} 正在输入...`;
+    }
+}
+
+// 隐藏正在输入状态
+function hideChatTypingIndicator() {
+    const nameEl = document.getElementById('chatContactName');
+    if (nameEl) {
+        nameEl.classList.remove('typing');
+        const originalName = nameEl.getAttribute('data-original-name');
+        if (originalName) {
+            nameEl.textContent = originalName;
+        }
+    }
+}
+
+// ==================== 表情库功能 ====================
+
+// 打开表情管理模态框
+function openStickerModal() {
+    const modal = document.getElementById('stickerModal');
+    if (modal) {
+        modal.classList.add('active');
+        renderStickerManageList();
+    }
+}
+
+// 关闭表情管理模态框
+function closeStickerModal() {
+    const modal = document.getElementById('stickerModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// 处理上传的表情文件
+function handleStickerFiles(files) {
+    if (!files || files.length === 0) return;
+    
+    Array.from(files).forEach(file => {
+        // 处理文本文件（名称: URL格式）
+        if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                let count = 0;
+                
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line) return;
+                    
+                    // 支持多种分隔符：中文冒号、英文冒号（带或不带空格）
+                    const match = line.match(/^(.+?)[：:]\s*(.+)$/);
+                    if (match) {
+                        const name = match[1].trim();
+                        const url = match[2].trim();
+                        
+                        // 验证是否是有效的URL
+                        if (url.startsWith('http://') || url.startsWith('https://')) {
+                            stickerLibrary.push({
+                                id: Date.now() + Math.random().toString(36).substr(2, 9) + count,
+                                name: name,
+                                url: url,
+                                description: name
+                            });
+                            count++;
+                        }
+                    }
+                });
+                
+                if (count > 0) {
+                    saveStickerLibrary();
+                    renderStickerManageList();
+                    showToast(`已添加 ${count} 个表情`);
+                } else {
+                    showToast('未找到有效的表情数据');
+                }
+            };
+            reader.readAsText(file);
+            return;
+        }
+        
+        // 处理图片文件
+        if (!file.type.startsWith('image/')) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            // 生成表情描述（使用文件名）
+            const name = file.name.replace(/\.[^/.]+$/, '');
+            
+            stickerLibrary.push({
+                id: Date.now() + Math.random().toString(36).substr(2, 9),
+                name: name,
+                url: e.target.result, // base64 data URL
+                description: name // 用于AI识别
+            });
+            
+            saveStickerLibrary();
+            renderStickerManageList();
+            showToast(`已添加表情: ${name}`);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// 渲染表情选择面板
+function renderStickerGrid() {
+    const grid = document.getElementById('stickerGrid');
+    const empty = document.getElementById('stickerEmpty');
+    if (!grid || !empty) return;
+    
+    if (stickerLibrary.length === 0) {
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+    }
+    
+    grid.style.display = 'grid';
+    empty.style.display = 'none';
+    
+    grid.innerHTML = stickerLibrary.map(sticker => `
+        <div class="sticker-item" data-id="${sticker.id}" title="${sticker.name}">
+            <img src="${sticker.url}" alt="${sticker.name}">
+        </div>
+    `).join('');
+    
+    // 点击发送表情
+    grid.querySelectorAll('.sticker-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const id = item.dataset.id;
+            sendSticker(id);
+            document.getElementById('stickerPanel')?.classList.add('hidden');
+        });
+    });
+}
+
+// 渲染表情管理列表
+function renderStickerManageList() {
+    const list = document.getElementById('stickerManageList');
+    if (!list) return;
+    
+    if (stickerLibrary.length === 0) {
+        list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">暂无表情，请上传</p>';
+        return;
+    }
+    
+    list.innerHTML = stickerLibrary.map(sticker => `
+        <div class="sticker-manage-item" data-id="${sticker.id}">
+            <img src="${sticker.url}" alt="${sticker.name}">
+            <div class="sticker-info">
+                <div class="sticker-name">${escapeHtml(sticker.name)}</div>
+                <div class="sticker-desc">${escapeHtml(sticker.description || sticker.name)}</div>
+            </div>
+            <button class="sticker-delete-btn" title="删除">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                    <path d="M4 6 H20 M8 6 V4 H16 V6 M6 6 V20 H18 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+    `).join('');
+    
+    // 删除表情
+    list.querySelectorAll('.sticker-delete-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const item = btn.closest('.sticker-manage-item');
+            const id = item?.dataset.id;
+            if (id && await customConfirm('确定要删除这个表情吗？', '删除表情')) {
+                stickerLibrary = stickerLibrary.filter(s => s.id !== id);
+                saveStickerLibrary();
+                renderStickerManageList();
+                showToast('表情已删除');
+            }
+        });
+    });
+}
+
+// 发送表情
+function sendSticker(stickerId) {
+    if (!currentChatContact) return;
+    
+    const sticker = stickerLibrary.find(s => s.id === stickerId);
+    if (!sticker) return;
+    
+    const chatKey = currentChatContact.id;
+    if (!privateChatHistory[chatKey]) {
+        privateChatHistory[chatKey] = [];
+    }
+    
+    // 添加表情消息
+    privateChatHistory[chatKey].push({
+        role: 'user',
+        content: `[表情:${sticker.name}]`,
+        sticker: sticker.url,
+        time: Date.now()
+    });
+    
+    renderPrivateChatMessages();
+    savePrivateChatHistory();
+}
+
+// 获取表情库描述（供AI参考）
+function getStickerLibraryDescription() {
+    if (stickerLibrary.length === 0) return '';
+    
+    const stickerList = stickerLibrary.map(s => `[表情:${s.name}]`).join('、');
+    return `\n\n【表情库规则】
+可用表情列表：${stickerList}
+重要规则：
+- 只能使用上述列表中的表情，禁止使用或创造任何不在列表中的表情
+- 发送表情格式：[表情:名称]（名称必须与列表完全一致）
+- 可以在文字后附加表情，如："好的呀 [表情:可爱]"
+- 适当使用表情增加聊天趣味，但不要每条都发`;
+}
+
+// ==================== 消息长按操作 ====================
+
+let msgLongPressTimer = null;
+let currentMessageMenu = null;
+
+// 绑定消息长按事件
+function bindMessageLongPress(container) {
+    const messages = container.querySelectorAll('.chat-app-message');
+    
+    messages.forEach(msg => {
+        const wrapper = msg.querySelector('.message-content-wrapper');
+        if (!wrapper) return;
+        
+        let startX, startY;
+        
+        // 触摸开始
+        wrapper.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            msgLongPressTimer = setTimeout(() => {
+                showMessageMenu(msg, e.touches[0].clientX, e.touches[0].clientY);
+            }, 500);
+        }, { passive: true });
+        
+        // 触摸移动（取消长按）
+        wrapper.addEventListener('touchmove', (e) => {
+            const moveX = Math.abs(e.touches[0].clientX - startX);
+            const moveY = Math.abs(e.touches[0].clientY - startY);
+            if (moveX > 10 || moveY > 10) {
+                clearTimeout(msgLongPressTimer);
+            }
+        }, { passive: true });
+        
+        // 触摸结束
+        wrapper.addEventListener('touchend', () => {
+            clearTimeout(msgLongPressTimer);
+        });
+        
+        // 鼠标右键（桌面端）
+        wrapper.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            showMessageMenu(msg, e.clientX, e.clientY);
+        });
+    });
+}
+
+// 显示消息操作菜单
+function showMessageMenu(msgEl, x, y) {
+    hideMessageMenu();
+    
+    const index = parseInt(msgEl.dataset.index);
+    const role = msgEl.dataset.role;
+    const isUser = role === 'user';
+    
+    const menu = document.createElement('div');
+    menu.className = 'message-context-menu';
+    menu.innerHTML = `
+        ${!isUser ? `<div class="menu-item" data-action="regenerate">
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+                <path d="M1 4 V10 H7 M23 20 V14 H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M20.49 9 A9 9 0 0 0 5.64 5.64 L1 10 M23 14 L18.36 18.36 A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            重新生成
+        </div>` : ''}
+        <div class="menu-item delete" data-action="delete">
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+                <path d="M4 6 H20 M8 6 V4 H16 V6 M6 6 V20 H18 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            删除
+        </div>
+    `;
+    
+    // 定位菜单
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    document.body.appendChild(menu);
+    
+    // 确保菜单在屏幕内
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+        menu.style.left = (window.innerWidth - rect.width - 10) + 'px';
+    }
+    if (rect.bottom > window.innerHeight) {
+        menu.style.top = (y - rect.height) + 'px';
+    }
+    
+    currentMessageMenu = menu;
+    
+    // 绑定菜单点击
+    menu.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', async () => {
+            const action = item.dataset.action;
+            hideMessageMenu();
+            
+            if (action === 'delete') {
+                await deleteMessage(index);
+            } else if (action === 'regenerate') {
+                await regenerateMessage(index);
+            }
+        });
+    });
+    
+    // 点击其他地方关闭菜单
+    setTimeout(() => {
+        document.addEventListener('click', hideMessageMenu, { once: true });
+        document.addEventListener('touchstart', hideMessageMenu, { once: true });
+    }, 10);
+}
+
+// 隐藏消息操作菜单
+function hideMessageMenu() {
+    if (currentMessageMenu) {
+        currentMessageMenu.remove();
+        currentMessageMenu = null;
+    }
+}
+
+// 删除消息
+async function deleteMessage(index) {
+    if (!currentChatContact) return;
+    
+    const chatKey = currentChatContact.id;
+    if (!privateChatHistory[chatKey]) return;
+    
+    privateChatHistory[chatKey].splice(index, 1);
+    savePrivateChatHistory();
+    renderPrivateChatMessages();
+    showToast('消息已删除');
+}
+
+// 重新生成AI消息
+async function regenerateMessage(index) {
+    if (!currentChatContact || isChatAppSending) return;
+    
+    const chatKey = currentChatContact.id;
+    if (!privateChatHistory[chatKey]) return;
+    
+    // 删除该条及之后的所有AI消息
+    const history = privateChatHistory[chatKey];
+    // 只删除这条消息
+    history.splice(index, 1);
+    
+    savePrivateChatHistory();
+    renderPrivateChatMessages();
+    
+    // 找到最后一条用户消息
+    const lastUserMsgIndex = history.length - 1;
+    if (lastUserMsgIndex >= 0 && history[lastUserMsgIndex].role === 'user') {
+        // 重新生成回复
+        showChatTypingIndicator();
+        isChatAppSending = true;
+        
+        try {
+            // 获取角色信息
+            const contacts = getChatContacts();
+            const contact = contacts.find(c => c.id === currentChatContact.id);
+            const characterInfo = contact ? `
+角色名：${contact.name}
+${contact.identity ? `身份：${contact.identity}` : ''}
+${contact.personality ? `性格：${contact.personality}` : ''}
+${contact.relationship ? `与主角关系：${contact.relationship}` : ''}
+${contact.description ? `描述：${contact.description}` : ''}
+`.trim() : `角色名：${currentChatContact.name}`;
+            
+            const storyContext = storySummary ? `【剧情背景】\n${storySummary}\n\n` : '';
+            const chatSummary = privateChatSummary[chatKey] || '';
+            const stickerInfo = getStickerLibraryDescription();
+            const recentHistory = history.slice(-40);
+            
+            const messages = [
+                {
+                    role: 'system',
+                    content: `你现在扮演一个角色与用户私聊。
+
+${characterInfo}
+
+${storyContext}${chatSummary ? `【聊天总结】\n${chatSummary}\n` : ''}
+
+要求：回复简短自然，符合角色性格${stickerInfo}`
+                },
+                ...recentHistory.map(msg => ({
+                    role: msg.role === 'user' ? 'user' : 'assistant',
+                    content: msg.content
+                }))
+            ];
+            
+            const response = await fetch(apiSettings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiSettings.apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: apiSettings.model,
+                    messages: messages,
+                    temperature: 0.9
+                })
+            });
+            
+            if (!response.ok) throw new Error('API请求失败');
+            
+            const data = await response.json();
+            const reply = data.choices[0]?.message?.content || '...';
+            
+            history.push({
+                role: 'assistant',
+                content: reply,
+                time: Date.now()
+            });
+            
+            savePrivateChatHistory();
+            renderPrivateChatMessages();
+            
+        } catch (error) {
+            console.error('重新生成失败:', error);
+            showToast('重新生成失败');
+        } finally {
+            hideChatTypingIndicator();
+            isChatAppSending = false;
+        }
+    }
 }
 
 // Initialize
